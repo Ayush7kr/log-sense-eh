@@ -59,7 +59,7 @@ export default function AnomalyPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between bg-slate-900/40 p-5 rounded-2xl border border-border-panel/30">
+      <div className="flex items-center justify-between bg-[var(--bg-panel)] p-5 rounded-2xl border border-[var(--border-panel)]">
         <div>
           <h2 className="text-2xl font-bold font-sora flex items-center gap-3">
             <Brain className="w-7 h-7 text-neon-purple" />
@@ -111,7 +111,7 @@ export default function AnomalyPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Trend Chart */}
         <div className="lg:col-span-8 space-y-6">
-            <div className="glass-panel p-6 bg-slate-900/20">
+            <div className="glass-panel p-6 bg-[var(--bg-panel)]">
                 <div className="flex items-center justify-between mb-8">
                     <h3 className="text-[0.7rem] font-bold uppercase tracking-widest text-text-secondary flex items-center gap-2">
                         <Activity className="w-4 h-4" /> Probabilistic Risk Trend
@@ -188,19 +188,19 @@ export default function AnomalyPage() {
                     <Fingerprint className="w-5 h-5" /> Behavioral Logic
                 </h3>
                 <div className="space-y-4 flex-1">
-                    <div className="p-3 rounded-xl bg-slate-900/60 border-l-4 border-red-500">
+                    <div className="p-3 rounded-xl bg-[var(--bg-panel)] border-l-4 border-red-500">
                         <p className="text-xs font-bold text-red-400">Low Entropy Auth</p>
                         <p className="text-[0.7rem] text-text-secondary mt-1 leading-relaxed italic">
                             "Repetitive authentication attempts with high velocity but varying user-agents detected. Probability of automated script: 94%."
                         </p>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-900/60 border-l-4 border-amber-500">
+                    <div className="p-3 rounded-xl bg-[var(--bg-panel)] border-l-4 border-amber-500">
                         <p className="text-xs font-bold text-amber-400">Geometric Deviation</p>
                         <p className="text-[0.7rem] text-text-secondary mt-1 leading-relaxed italic">
                             "User accessing resources from geographically distant points within 2 hours. Impossible travel heuristic triggered."
                         </p>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-900/60 border-l-4 border-blue-500">
+                    <div className="p-3 rounded-xl bg-[var(--bg-panel)] border-l-4 border-blue-500">
                         <p className="text-xs font-bold text-blue-400">Frequency Spike</p>
                         <p className="text-[0.7rem] text-text-secondary mt-1 leading-relaxed italic">
                             "Resource access density significantly exceeds historical baseline for current operational window."
@@ -208,7 +208,7 @@ export default function AnomalyPage() {
                     </div>
                 </div>
                 <div className="mt-8 pt-6 border-t border-border-panel/30">
-                    <p className="text-[0.65rem] text-text-secondary leading-relaxed bg-slate-950/40 p-3 rounded-lg border border-border-panel/20">
+                    <p className="text-[0.65rem] text-[var(--text-secondary)] leading-relaxed bg-[var(--bg-main)] p-3 rounded-lg border border-[var(--border-panel)]">
                         <Info className="w-3.5 h-3.5 mb-1 text-accent-primary" />
                         Isolation Forest model identifies anomalies based on how 'easy' it is to isolate a point in the dataset. Points with shorter search paths are flagged as outliers.
                     </p>

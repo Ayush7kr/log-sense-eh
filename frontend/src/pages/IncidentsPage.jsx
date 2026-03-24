@@ -60,7 +60,7 @@ export default function IncidentsPage() {
 
   return (
     <div className="space-y-6 h-full flex flex-col">
-      <div className="flex items-center justify-between bg-slate-900/40 p-5 rounded-2xl border border-border-panel/30">
+      <div className="flex items-center justify-between bg-[var(--bg-panel)] p-5 rounded-2xl border border-[var(--border-panel)]">
         <div>
           <h2 className="text-2xl font-bold font-sora flex items-center gap-3">
             <GanttChartSquare className="w-7 h-7 text-accent-primary" />
@@ -120,7 +120,7 @@ export default function IncidentsPage() {
                     <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border-panel/30 text-[0.6rem] font-mono">
                       <span className="text-accent-primary font-bold">{incident.attacker_ip}</span>
                       <span className="text-text-secondary">→</span>
-                      <span className="text-slate-200">{incident.target_user}</span>
+                      <span className="text-[var(--text-primary)]">{incident.target_user}</span>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-text-secondary group-hover:translate-x-1 transition-transform" />
@@ -137,9 +137,9 @@ export default function IncidentsPage() {
             {!selectedId ? (
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="glass-panel flex-1 flex flex-col items-center justify-center text-center p-10 bg-slate-900/20"
+                className="glass-panel flex-1 flex flex-col items-center justify-center text-center p-10 bg-[var(--bg-panel)]"
               >
-                <div className="w-20 h-20 rounded-3xl bg-slate-800/50 flex items-center justify-center mb-6 border border-slate-700/50">
+                <div className="w-20 h-20 rounded-3xl bg-[var(--bg-main)] flex items-center justify-center mb-6 border border-[var(--border-panel)]">
                     <ShieldAlert className="w-10 h-10 text-text-secondary" />
                 </div>
                 <h3 className="text-xl font-bold text-text-primary font-sora">Incident Forensic Workbench</h3>
@@ -151,7 +151,7 @@ export default function IncidentsPage() {
               <motion.div 
                 key={selectedId}
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                className="glass-panel flex-1 flex flex-col overflow-hidden border-accent-primary/40 bg-slate-950/40"
+                className="glass-panel flex-1 flex flex-col overflow-hidden border-[var(--border-panel)] bg-[var(--bg-panel)]"
               >
                 {loadingDetail ? (
                    <div className="flex-1 flex items-center justify-center flex-col gap-4">
@@ -160,15 +160,15 @@ export default function IncidentsPage() {
                    </div>
                 ) : detail && (
                    <>
-                    <div className="p-6 border-b border-border-panel flex items-center justify-between bg-slate-900/60 backdrop-blur-xl">
+                    <div className="p-6 border-b border-[var(--border-panel)] flex items-center justify-between bg-[var(--bg-panel)] backdrop-blur-xl">
                         <div className="flex items-center gap-4">
-                            <button onClick={() => setSelectedId(null)} className="lg:hidden p-2 hover:bg-slate-800 rounded-xl transition-colors">
+                            <button onClick={() => setSelectedId(null)} className="lg:hidden p-2 hover:brightness-110 rounded-xl transition-colors">
                                 <ArrowRight className="w-5 h-5 rotate-180" />
                             </button>
                             <div>
                                 <div className="flex items-center gap-3">
                                     <h3 className="text-xl font-bold font-sora">Incident Investigation</h3>
-                                    <span className="px-2 py-0.5 rounded bg-slate-800 text-[0.65rem] font-mono text-text-secondary border border-slate-700 tracking-tighter">ID: {detail.incident.id}</span>
+                                    <span className="px-2 py-0.5 rounded bg-[var(--bg-main)] text-[0.65rem] font-mono text-[var(--text-secondary)] border border-[var(--border-panel)] tracking-tighter">ID: {detail.incident.id}</span>
                                 </div>
                                 <p className="text-xs text-text-secondary mt-1">{detail.incident.description}</p>
                             </div>
@@ -203,7 +203,7 @@ export default function IncidentsPage() {
 
                     <div className="flex-1 overflow-y-auto p-8 scroll-thin space-y-10">
                         {/* Graph Preview */}
-                        <div className="bg-slate-900/40 p-6 rounded-2xl border border-border-panel/30">
+                        <div className="bg-[var(--bg-panel)] p-6 rounded-2xl border border-[var(--border-panel)]">
                              <h4 className="text-[0.6rem] uppercase tracking-widest text-accent-primary font-bold mb-8 flex items-center gap-2">
                                 <Activity className="w-4 h-4" /> Entity Relationship Logic
                              </h4>
@@ -211,7 +211,7 @@ export default function IncidentsPage() {
                                 <div className="absolute top-1/2 left-[15%] right-[15%] h-px bg-gradient-to-r from-red-500/50 via-accent-primary/50 to-emerald-500/50" />
                                 
                                 <div className="z-10 flex flex-col items-center gap-3 group">
-                                    <div className="w-16 h-16 rounded-3xl bg-slate-950 border border-red-500/50 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.1)] group-hover:scale-110 transition-transform">
+                                    <div className="w-16 h-16 rounded-3xl bg-[var(--bg-main)] border border-red-500/50 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.1)] group-hover:scale-110 transition-transform">
                                         <ShieldAlert className="w-7 h-7 text-red-500" />
                                     </div>
                                     <div className="text-center">
@@ -220,13 +220,13 @@ export default function IncidentsPage() {
                                     </div>
                                 </div>
 
-                                <div className="z-10 flex flex-col items-center gap-3 bg-slate-900 px-4 py-2 border border-slate-800 rounded-xl">
-                                    <div className="text-[0.6rem] font-bold text-slate-400 font-mono italic">"{detail.incident.type}"</div>
+                                <div className="z-10 flex flex-col items-center gap-3 bg-[var(--bg-main)] px-4 py-2 border border-[var(--border-panel)] rounded-xl">
+                                    <div className="text-[0.6rem] font-bold text-[var(--text-secondary)] font-mono italic">"{detail.incident.type}"</div>
                                     <ArrowRight className="w-4 h-4 text-text-secondary" />
                                 </div>
 
                                 <div className="z-10 flex flex-col items-center gap-3 group">
-                                    <div className="w-16 h-16 rounded-3xl bg-slate-950 border border-emerald-500/50 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.1)] group-hover:scale-110 transition-transform">
+                                    <div className="w-16 h-16 rounded-3xl bg-[var(--bg-main)] border border-emerald-500/50 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.1)] group-hover:scale-110 transition-transform">
                                         <History className="w-7 h-7 text-emerald-500" />
                                     </div>
                                     <div className="text-center">
@@ -242,23 +242,23 @@ export default function IncidentsPage() {
                              <h4 className="text-[0.6rem] uppercase tracking-widest text-accent-primary font-bold flex items-center gap-2">
                                 <History className="w-4 h-4" /> Attack Chain Forensics
                              </h4>
-                             <div className="space-y-4 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800">
+                             <div className="space-y-4 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-[var(--border-panel)]">
                                 {detail.timeline.map((log) => (
                                     <div key={log.id} className="relative pl-8 group">
-                                        <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-2 ${log.risk === 'High' ? 'border-red-500 bg-slate-950' : 'border-slate-700 bg-slate-900'} flex items-center justify-center z-10 transition-all group-hover:scale-110`}>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${log.risk === 'High' ? 'bg-red-500' : 'bg-slate-600'}`} />
+                                        <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-2 ${log.risk === 'High' ? 'border-red-500 bg-[var(--bg-main)]' : 'border-[var(--border-panel)] bg-[var(--bg-panel)]'} flex items-center justify-center z-10 transition-all group-hover:scale-110`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${log.risk === 'High' ? 'bg-red-500' : 'bg-[var(--text-secondary)]'}`} />
                                         </div>
-                                        <div className="glass-panel p-4 text-[0.7rem] bg-slate-900/20 hover:bg-slate-900/40 transition-colors">
+                                        <div className="glass-panel p-4 text-[0.7rem] bg-[var(--bg-panel)] hover:brightness-[0.9] dark:hover:brightness-[1.1] transition-colors">
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="font-mono text-text-secondary text-[0.6rem] bg-slate-800 px-2 py-0.5 rounded">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                                                <span className={`px-2 py-0.5 rounded-full text-[0.55rem] font-bold uppercase tracking-widest ${log.risk === 'High' ? 'bg-red-500/10 text-red-500' : 'bg-slate-500/10 text-slate-400'}`}>
+                                                <span className="font-mono text-[var(--text-secondary)] text-[0.6rem] bg-[var(--bg-main)] border border-[var(--border-panel)] px-2 py-0.5 rounded">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                                                <span className={`px-2 py-0.5 rounded-full text-[0.55rem] font-bold uppercase tracking-widest ${log.risk === 'High' ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-[var(--text-secondary)]'}`}>
                                                     {log.risk} RISK
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <div className="flex-1">
-                                                    <p className="text-slate-200 font-bold mb-1">{log.event}</p>
-                                                    <p className="text-slate-500 font-mono text-[0.6rem]">
+                                                    <p className="text-[var(--text-primary)] font-bold mb-1">{log.event}</p>
+                                                    <p className="text-[var(--text-secondary)] font-mono text-[0.6rem]">
                                                         {log.ip} <ArrowRight className="inline w-2 h-2 mx-1" /> {log.user}
                                                     </p>
                                                 </div>

@@ -147,7 +147,7 @@ export default function ThreatIntelPage() {
                 <button 
                     disabled={simulating}
                     onClick={() => launchAttack('brute-force')}
-                    className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-700 hover:border-red-500/50 hover:bg-slate-800 transition-all font-bold text-xs group"
+                    className="w-full flex items-center justify-between p-3 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-panel)] hover:border-red-500/50 hover:brightness-110 transition-all font-bold text-xs group"
                 >
                     <div className="flex items-center gap-3">
                         <Flame className="w-4 h-4 text-red-500 group-hover:animate-bounce" />
@@ -156,7 +156,7 @@ export default function ThreatIntelPage() {
                     {simulating ? <Activity className="w-4 h-4 animate-spin text-accent-primary" /> : <ChevronRight className="w-4 h-4 opacity-50" />}
                 </button>
                 <button 
-                    className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-700 opacity-50 cursor-not-allowed font-bold text-xs"
+                    className="w-full flex items-center justify-between p-3 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-panel)] opacity-50 cursor-not-allowed font-bold text-xs"
                 >
                     <div className="flex items-center gap-3">
                         <Bug className="w-4 h-4 text-emerald-500" />
@@ -203,9 +203,9 @@ export default function ThreatIntelPage() {
                         { country: 'China', code: 'CN', threats: 750, risk: 'High' },
                         { country: 'Russia', code: 'RU', threats: 420, risk: 'Critical' }
                     ].map(region => (
-                        <div key={region.code} className="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-border-panel/20">
+                        <div key={region.code} className="flex items-center justify-between p-2 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-panel)]">
                             <div className="flex items-center gap-3">
-                                <div className="w-6 h-4 bg-slate-800 rounded-sm flex items-center justify-center text-[0.5rem] font-bold">{region.code}</div>
+                                <div className="w-6 h-4 bg-[var(--border-panel)] rounded-sm flex items-center justify-center text-[0.5rem] font-bold">{region.code}</div>
                                 <span className="text-xs font-semibold">{region.country}</span>
                             </div>
                             <div className="flex items-center gap-3">

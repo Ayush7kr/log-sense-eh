@@ -6,19 +6,19 @@ function SettingsToggle({ label, description, checked, onChange, accent }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2.5">
       <div>
-        <p className="text-xs font-medium text-slate-200">{label}</p>
-        <p className="text-[0.7rem] text-slate-500 mt-0.5">{description}</p>
+        <p className="text-xs font-medium text-[var(--text-primary)]">{label}</p>
+        <p className="text-[0.7rem] text-[var(--text-secondary)] mt-0.5">{description}</p>
       </div>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full border border-slate-600/80 bg-slate-900/90 transition-colors ${
+        className={`relative inline-flex h-6 w-11 items-center rounded-full border border-[var(--border-panel)] bg-[var(--bg-main)] transition-colors ${
           checked ? accent : ''
         }`}
       >
         <motion.span
           layout
-          className="h-4 w-4 rounded-full bg-slate-200 shadow-md"
+          className="h-4 w-4 rounded-full bg-white dark:bg-slate-200 shadow-md"
           transition={{ type: 'spring', stiffness: 300, damping: 18 }}
           style={{ x: checked ? 18 : 4 }}
         />
@@ -63,15 +63,15 @@ function SettingsPage() {
     <div className="space-y-4 max-w-3xl">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-50">Settings</h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Settings</h2>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
             Tune simulation behaviour and UI preferences for this demo environment.
           </p>
         </div>
       </div>
 
       <div className="glass-panel p-3 md:p-4 space-y-3">
-        <p className="text-xs font-medium text-slate-300 mb-1">Simulation controls</p>
+        <p className="text-xs font-medium text-[var(--text-primary)] mb-1">Simulation controls</p>
         <SettingsToggle
           label="Demo attack mode"
           description="Increase the frequency of high-risk simulated events (privilege escalation, port scans)."

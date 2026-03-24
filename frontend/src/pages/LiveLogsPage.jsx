@@ -66,12 +66,12 @@ export default function LiveLogsPage() {
         </div>
         <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <CircleDot className={`w-3 h-3 ${streaming ? 'text-emerald-400 animate-pulse' : 'text-slate-500'}`} />
+                <CircleDot className={`w-3 h-3 ${streaming ? 'text-emerald-500 animate-pulse' : 'text-gray-400'}`} />
                 <span className="text-[0.65rem] font-bold text-emerald-400 uppercase tracking-widest">{streaming ? 'Live Ingesting' : 'Paused'}</span>
             </div>
             <button
                 onClick={() => setStreaming(!streaming)}
-                className="p-2 rounded-xl border border-border-panel hover:bg-slate-800 transition-all text-text-primary"
+                className="p-2 rounded-xl border border-border-panel hover:brightness-110 transition-all text-text-primary"
             >
                 {streaming ? <X className="w-5 h-5" /> : <Activity className="w-5 h-5" />}
             </button>
@@ -138,7 +138,7 @@ export default function LiveLogsPage() {
 
         {/* Log Table */}
         <div className="lg:col-span-3 glass-panel flex flex-col overflow-hidden border-border-panel/30">
-            <div className="p-3 border-b border-border-panel/50 bg-slate-900/40 flex items-center justify-between">
+            <div className="p-3 border-b border-border-panel/50 bg-[var(--bg-panel)] flex items-center justify-between">
                 <span className="text-[0.7rem] font-mono text-text-secondary uppercase tracking-widest">Active Packet Stream</span>
                 <button className="p-1 text-text-secondary hover:text-text-primary transition-colors">
                     <ArrowDownToLine className="w-4 h-4" />
@@ -146,7 +146,7 @@ export default function LiveLogsPage() {
             </div>
             <div className="flex-1 h-[calc(100vh-250px)] overflow-auto scroll-thin">
                 <table className="min-w-full text-[0.7rem] font-mono border-separate border-spacing-0">
-                    <thead className="sticky top-0 z-20 bg-slate-900/90 backdrop-blur-md">
+                    <thead className="sticky top-0 z-20 bg-[var(--bg-main)] backdrop-blur-md">
                         <tr className="text-text-secondary text-left">
                             <th className="px-5 py-3 border-b border-border-panel/50">Timestamp</th>
                             <th className="px-5 py-3 border-b border-border-panel/50">Identity</th>
@@ -160,7 +160,7 @@ export default function LiveLogsPage() {
                             <motion.tr 
                                 key={log.id} 
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                className={`group hover:bg-slate-800/40 transition-colors ${log.risk === 'High' ? 'bg-red-500/5' : ''}`}
+                                className={`group hover:brightness-[0.9] dark:hover:brightness-[1.1] transition-colors ${log.risk === 'High' ? 'bg-red-500/5' : ''}`}
                             >
                                 <td className="px-5 py-3 text-text-secondary">{new Date(log.timestamp).toLocaleTimeString()}</td>
                                 <td className="px-5 py-3 text-text-primary font-bold">{log.user}</td>

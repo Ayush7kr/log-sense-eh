@@ -50,9 +50,9 @@ function AlertsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 bg-slate-900/40 p-4 rounded-xl border border-border-panel/50">
+      <div className="flex items-center justify-between gap-3 bg-[var(--bg-panel)] p-4 rounded-xl border border-[var(--border-panel)]">
         <div>
-          <h2 className="text-xl font-bold font-sora text-slate-50">Operational Alerts</h2>
+          <h2 className="text-xl font-bold font-sora text-[var(--text-primary)]">Operational Alerts</h2>
           <p className="text-xs text-text-secondary mt-1">
             Real-time threat detection from the security simulation engine.
           </p>
@@ -78,7 +78,7 @@ function AlertsPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-xs font-semibold text-slate-50">{alert.event}</p>
+                  <p className="text-xs font-semibold text-[var(--text-primary)]">{alert.event}</p>
                   <span className="inline-flex items-center rounded-full bg-red-500/15 border border-red-500/40 px-1.5 py-0.5 text-[0.65rem] font-semibold text-red-400">
                     Score {alert.risk_score}
                   </span>
@@ -88,18 +88,18 @@ function AlertsPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-[0.7rem] text-slate-400 mt-1">
+                <p className="text-[0.7rem] text-[var(--text-secondary)] mt-1">
                   {alert.description || `Potential malicious activity detected from ${alert.ip}.`}
                 </p>
-                  <p className="text-[0.65rem] text-slate-500 mt-1">{new Date(alert.timestamp).toLocaleString()}</p>
+                  <p className="text-[0.65rem] text-[var(--text-secondary)] mt-1">{new Date(alert.timestamp).toLocaleString()}</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between text-[0.7rem]">
-              <div className="flex items-center gap-1.5 text-slate-400">
+              <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
-                    settings.notifications ? 'bg-red-400 animate-pulse' : 'bg-slate-500'
+                    settings.notifications ? 'bg-red-400 animate-pulse' : 'bg-gray-400'
                   }`}
                 />
                 <span>Requires triage</span>
@@ -109,7 +109,7 @@ function AlertsPage() {
                   type="button"
                   onClick={() => handleInvestigate(alert.id)}
                   disabled={alert.status === 'investigating'}
-                  className="inline-flex items-center gap-1 rounded-full border border-slate-600/70 px-2.5 py-1 text-[0.65rem] text-slate-200 hover:border-neon-blue/60 hover:text-neon-blue transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                  className="inline-flex items-center gap-1 rounded-full border border-[var(--border-panel)] px-2.5 py-1 text-[0.65rem] text-[var(--text-secondary)] hover:border-blue-500/60 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                 >
                   <span>{alert.status === 'investigating' ? 'Investigating...' : 'Investigate'}</span>
                   <ArrowRight className="w-3 h-3" />
@@ -117,7 +117,7 @@ function AlertsPage() {
                 <button
                   type="button"
                   onClick={() => handleResolve(alert.id)}
-                  className="inline-flex items-center rounded-full border border-slate-700/70 px-2.5 py-1 text-[0.65rem] text-slate-400 hover:border-emerald-500/60 hover:text-emerald-400 transition-colors"
+                  className="inline-flex items-center rounded-full border border-[var(--border-panel)] px-2.5 py-1 text-[0.65rem] text-[var(--text-secondary)] hover:border-emerald-500/60 hover:text-emerald-500 transition-colors"
                 >
                   Mark safe
                 </button>
@@ -126,7 +126,7 @@ function AlertsPage() {
           </motion.div>
         ))}
         {!alerts.length && (
-          <div className="col-span-full glass-panel p-4 text-center text-xs text-slate-500">
+          <div className="col-span-full glass-panel p-4 text-center text-xs text-[var(--text-secondary)]">
             No high-risk alerts yet. Enable demo attack mode in Settings to spike activity.
           </div>
         )}

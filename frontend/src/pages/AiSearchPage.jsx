@@ -49,12 +49,12 @@ function AiSearchPage() {
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-900/80 px-3 py-1 text-[0.7rem] text-slate-400 mb-1">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-panel)] bg-[var(--bg-panel)] px-3 py-1 text-[0.7rem] text-[var(--text-secondary)] mb-1">
           <Sparkles className="w-3 h-3 text-neon-purple" />
           Natural language → SQL over simulated logs
         </div>
-        <h2 className="text-2xl font-semibold text-slate-50">AI search console</h2>
-        <p className="text-xs text-slate-400">
+        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">AI search console</h2>
+        <p className="text-xs text-[var(--text-secondary)]">
           Ask questions in plain English. When configured, Gemini will translate to safe SQL over
           the `logs` table; otherwise rule-based mappings are used.
         </p>
@@ -66,7 +66,7 @@ function AiSearchPage() {
       >
         <div className="relative flex-1">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="w-4 h-4 text-slate-500" />
+            <Search className="w-4 h-4 text-[var(--text-secondary)]" />
           </div>
           <input
             className="glass-input glass-input-search w-full pr-28 py-2 text-sm"
@@ -83,8 +83,8 @@ function AiSearchPage() {
             {loading ? 'Running…' : 'Run query'}
           </motion.button>
         </div>
-        <div className="flex flex-wrap gap-2 text-[0.7rem] text-slate-400">
-          <span className="text-slate-500">Examples:</span>
+        <div className="flex flex-wrap gap-2 text-[0.7rem] text-[var(--text-secondary)]">
+          <span className="text-[var(--text-secondary)]">Examples:</span>
           {examples.map((ex) => (
             <button
               key={ex}
@@ -106,18 +106,18 @@ function AiSearchPage() {
 
       {sql && (
         <div className="glass-panel p-3 md:p-4 space-y-2">
-          <p className="text-xs font-medium text-slate-300">Generated SQL</p>
-          <pre className="text-[0.7rem] bg-slate-950/80 border border-slate-800/80 rounded-lg px-3 py-2 text-slate-200 overflow-x-auto scroll-thin">
+          <p className="text-xs font-medium text-[var(--text-primary)]">Generated SQL</p>
+          <pre className="text-[0.7rem] bg-[var(--bg-main)] border border-[var(--border-panel)] rounded-lg px-3 py-2 text-[var(--text-primary)] overflow-x-auto scroll-thin">
             {sql}
           </pre>
         </div>
       )}
 
       <div className="glass-panel p-3 md:p-4">
-        <p className="text-xs font-medium text-slate-300 mb-2">Query results</p>
+        <p className="text-xs font-medium text-[var(--text-primary)] mb-2">Query results</p>
         <div className="overflow-x-auto max-h-[420px] scroll-thin">
           <table className="min-w-full text-xs">
-            <thead className="border-b border-slate-800/80 text-slate-500">
+            <thead className="border-b border-[var(--border-panel)] text-[var(--text-secondary)]">
               <tr>
                 <th className="py-2 text-left font-medium">Timestamp</th>
                 <th className="py-2 text-left font-medium">User</th>
@@ -130,18 +130,18 @@ function AiSearchPage() {
               {rows.map((row, idx) => (
                 <tr
                   key={`${row.timestamp}-${idx}`}
-                  className="border-b border-slate-900/80 hover:bg-slate-900/70 transition-colors"
+                  className="border-b border-[var(--border-panel)] hover:bg-[var(--accent-glow)] transition-colors"
                 >
-                  <td className="py-2 text-slate-300">{row.timestamp}</td>
-                  <td className="py-2 text-slate-300">{row.user}</td>
-                  <td className="py-2 text-slate-300">{row.ip}</td>
-                  <td className="py-2 text-slate-300">{row.event}</td>
-                  <td className="py-2 text-slate-300">{row.risk}</td>
+                  <td className="py-2 text-[var(--text-secondary)]">{row.timestamp}</td>
+                  <td className="py-2 text-[var(--text-secondary)]">{row.user}</td>
+                  <td className="py-2 text-[var(--text-secondary)]">{row.ip}</td>
+                  <td className="py-2 text-[var(--text-secondary)]">{row.event}</td>
+                  <td className="py-2 text-[var(--text-secondary)]">{row.risk}</td>
                 </tr>
               ))}
               {!rows.length && (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-slate-500">
+                  <td colSpan={5} className="py-6 text-center text-[var(--text-secondary)]">
                     No results yet. Run a query to populate this table.
                   </td>
                 </tr>
