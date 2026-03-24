@@ -28,6 +28,60 @@ export default function ThreatHeatmapPage() {
     return grid
   }, [logs])
 
+  const stats = useMemo(() => {
+    if (!logs || logs.length === 0) {
+      return {
+        peakHour: 'N/A',
+        peakDesc: 'Awaiting telemetry.',
+        criticalHour: 'N/A',
+        criticalDesc: 'No critical events detected.',
+        driftText: '0%',
+        driftDesc: 'Insufficient data.'
+      }
+    }
+
+    const hourCounts = Array(24).fill(0)
+    const criticalCounts = Array(24).fill(0)
+    let amCount = 0
+    let pmCount = 0
+
+    logs.forEach(log => {
+      const h = new Date(log.timestamp).getHours()
+      hourCounts[h]++
+      
+      if (log.risk === 'High' || log.event.includes('Brute Force') || log.event.includes('Privilege')) {
+        criticalCounts[h]++
+      }
+
+      if (h >= 6 && h < 18) {
+        amCount++
+      } else {
+        pmCount++
+      }
+    })
+
+    const maxHour = hourCounts.indexOf(Math.max(...hourCounts))
+    const endHour = (maxHour + 1) % 24
+    const peakHour = `${maxHour < 10 ? '0' + maxHour : maxHour}:00 - ${endHour < 10 ? '0' + endHour : endHour}:00`
+    const peakDesc = `Highest volume of events (${hourCounts[maxHour]}).`
+
+    const maxCrit = Math.max(...criticalCounts)
+    let criticalHour = 'None'
+    let criticalDesc = 'No critical event clusters.'
+    if (maxCrit > 0) {
+      const cHour = criticalCounts.indexOf(maxCrit)
+      criticalHour = `${cHour < 10 ? '0' + cHour : cHour}:00`
+      criticalDesc = `High-risk signatures (${maxCrit}) detected.`
+    }
+
+    const total = logs.length
+    const offHoursPct = Math.round((pmCount / total) * 100)
+    const driftText = offHoursPct > 50 ? `+${offHoursPct - 50}% Shift` : `${offHoursPct}% Off-hours`
+    const driftDesc = offHoursPct > 50 ? 'Events moving into evening shifts.' : 'Activity mostly in standard hours.'
+
+    return { peakHour, peakDesc, criticalHour, criticalDesc, driftText, driftDesc }
+  }, [logs])
+
   const getIntensityColor = (count) => {
     if (count === 0) return 'bg-[var(--bg-panel)]' // Empty
     if (count < 3) return 'bg-blue-500/20 border-blue-500/30' // Low
@@ -120,8 +174,8 @@ export default function ThreatHeatmapPage() {
             </div>
             <div>
                 <h4 className="text-[0.65rem] font-bold uppercase tracking-widest text-blue-400 mb-1">Peak Activity Hour</h4>
-                <p className="text-xl font-bold font-sora">14:00 - 15:00</p>
-                <p className="text-[0.6rem] text-text-secondary mt-1">Highest frequency of successful authentication.</p>
+                <p className="text-xl font-bold font-sora">{stats.peakHour}</p>
+                <p className="text-[0.6rem] text-text-secondary mt-1">{stats.peakDesc}</p>
             </div>
         </div>
         <div className="glass-panel p-5 bg-gradient-to-br from-red-500/5 to-transparent flex gap-4">
@@ -130,8 +184,8 @@ export default function ThreatHeatmapPage() {
             </div>
             <div>
                 <h4 className="text-[0.65rem] font-bold uppercase tracking-widest text-red-400 mb-1">Critical Cluster</h4>
-                <p className="text-xl font-bold font-sora">02:00 UTC</p>
-                <p className="text-[0.6rem] text-text-secondary mt-1">Brute force signatures detected in off-hours.</p>
+                <p className="text-xl font-bold font-sora">{stats.criticalHour}</p>
+                <p className="text-[0.6rem] text-text-secondary mt-1">{stats.criticalDesc}</p>
             </div>
         </div>
         <div className="glass-panel p-5 bg-gradient-to-br from-purple-500/5 to-transparent flex gap-4">
@@ -140,8 +194,8 @@ export default function ThreatHeatmapPage() {
             </div>
             <div>
                 <h4 className="text-[0.65rem] font-bold uppercase tracking-widest text-purple-400 mb-1">Temporal Drift</h4>
-                <p className="text-xl font-bold font-sora">+12% Shift</p>
-                <p className="text-[0.6rem] text-text-secondary mt-1">Security events moving into evening shifts.</p>
+                <p className="text-xl font-bold font-sora">{stats.driftText}</p>
+                <p className="text-[0.6rem] text-text-secondary mt-1">{stats.driftDesc}</p>
             </div>
         </div>
       </div>

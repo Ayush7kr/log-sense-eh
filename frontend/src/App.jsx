@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardLayout from './layout/DashboardLayout'
 import OverviewPage from './pages/OverviewPage'
 import LiveLogsPage from './pages/LiveLogsPage'
+import SystemLogsPage from './pages/SystemLogsPage'
 import AlertsPage from './pages/AlertsPage'
 import AiSearchPage from './pages/AiSearchPage'
 import ThreatHeatmapPage from './pages/ThreatHeatmapPage'
@@ -37,6 +38,7 @@ function App() {
                     <Route index element={<OverviewPage />} />
                     <Route path="incidents" element={<IncidentsPage />} />
                     <Route path="logs" element={<LiveLogsPage />} />
+                    <Route path="pc-logs" element={<SystemLogsPage />} />
                     <Route path="alerts" element={<AlertsPage />} />
                     <Route path="threat-intel" element={<ThreatIntelPage />} />
                     <Route path="ai-search" element={<AiSearchPage />} />

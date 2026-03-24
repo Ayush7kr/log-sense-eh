@@ -52,6 +52,7 @@ export default function LiveLogsPage() {
     }
   }
 
+
   return (
     <div className="space-y-6 flex flex-col h-full">
       <div className="flex items-center justify-between">
@@ -116,7 +117,7 @@ export default function LiveLogsPage() {
             </div>
 
             <div className="glass-panel p-5 border-dashed border-accent-primary/40 relative group overflow-hidden">
-                <div className="absolute inset-0 bg-accent-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-accent-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 <h3 className="text-[0.65rem] font-bold text-accent-primary uppercase tracking-widest flex items-center gap-2 mb-3">
                     <Upload className="w-3.5 h-3.5" /> Manual Ingestion
                 </h3>

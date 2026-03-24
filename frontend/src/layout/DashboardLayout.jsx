@@ -13,6 +13,7 @@ import {
   PauseCircle,
   GanttChartSquare,
   BarChart3,
+  HardDrive
 } from 'lucide-react'
 import { useLogsContext } from '../hooks/LogsContext'
 import { ThemeToggle } from '../components/ThemeToggle'
@@ -20,7 +21,8 @@ import { ThemeToggle } from '../components/ThemeToggle'
 const navItems = [
   { to: '/', label: 'Overview', icon: Shield },
   { to: '/incidents', label: 'Incidents', icon: GanttChartSquare },
-  { to: '/logs', label: 'Live Logs', icon: TerminalSquare },
+  { to: '/logs', label: 'Network Logs', icon: TerminalSquare },
+  { to: '/pc-logs', label: 'System Logs', icon: HardDrive },
   { to: '/alerts', label: 'Alerts', icon: BellRing },
   { to: '/threat-intel', label: 'Threat Intel', icon: BarChart3 },
   { to: '/ai-search', label: 'AI Search', icon: Search },

@@ -226,6 +226,49 @@ app.post('/api/upload', (req, res) => {
   res.json({ count: parsed.length });
 });
 
+app.get('/api/pc-logs', (req, res) => {
+  const psCmd = `Get-WinEvent -FilterHashtable @{LogName='System','Application'; Level=1,2,3} -MaxEvents 50 -ErrorAction SilentlyContinue | Select-Object TimeCreated, Id, LevelDisplayName, Message, ProviderName, MachineName | ConvertTo-Json -Compress`;
+  
+  require('child_process').exec(`powershell.exe -NoProfile -Command "${psCmd}"`, { maxBuffer: 1024 * 1024 * 5 }, (error, stdout, stderr) => {
+      if (error) {
+          console.error('PowerShell exec error:', error);
+          return res.status(500).json({ error: 'Failed to fetch PC logs' });
+      }
+      
+      try {
+          if (!stdout || stdout.trim() === '') return res.json({ logs: [] });
+          let evtLogs = JSON.parse(stdout);
+          if (!Array.isArray(evtLogs)) evtLogs = [evtLogs];
+          
+          const pLogs = evtLogs.filter(Boolean).map((log, index) => {
+              const isHigh = String(log.LevelDisplayName).includes('Error') || String(log.LevelDisplayName).includes('Critical');
+              const risk = isHigh ? 'High' : (String(log.LevelDisplayName).includes('Warning') ? 'Medium' : 'Low');
+              const cleanMessage = String(log.Message).replace(/\r?\n|\r/g, ' ').substring(0, 150);
+              
+              let isoTimestamp = log.TimeCreated || new Date().toISOString();
+              if (typeof isoTimestamp === 'string' && isoTimestamp.includes('Date(')) {
+                  const ms = parseInt(isoTimestamp.match(/\d+/)[0], 10);
+                  isoTimestamp = new Date(ms).toISOString();
+              }
+              
+              return {
+                  id: `pc-${index}-${Date.now()}`,
+                  user: log.MachineName || 'host_system',
+                  ip: '127.0.0.1',
+                  event: `[${log.ProviderName}] ${cleanMessage}`,
+                  risk: risk,
+                  timestamp: isoTimestamp
+              };
+          });
+          
+          res.json({ logs: pLogs });
+      } catch (parseError) {
+          console.error('Error parsing PC logs:', parseError);
+          res.status(500).json({ error: 'Process parsing error' });
+      }
+  });
+});
+
 app.get('/api/anomalies', (req, res) => safeQuery(() => {
     const rows = db.prepare('SELECT risk, ip FROM logs ORDER BY id DESC LIMIT 500').all();
     const ipCounts = {};
@@ -247,6 +290,20 @@ app.get('/api/anomalies', (req, res) => safeQuery(() => {
 }, res));
 
 // --- Settings & Simulation ---
+app.post('/api/simulation/start', (req, res) => {
+    settings.simulation = true;
+    setSimulation(true);
+    db.prepare("INSERT INTO settings (key, value) VALUES ('simulation', 'true') ON CONFLICT(key) DO UPDATE SET value = 'true'").run();
+    res.json({ ok: true });
+});
+
+app.post('/api/simulation/stop', (req, res) => {
+    settings.simulation = false;
+    setSimulation(false);
+    db.prepare("INSERT INTO settings (key, value) VALUES ('simulation', 'false') ON CONFLICT(key) DO UPDATE SET value = 'false'").run();
+    res.json({ ok: true });
+});
+
 app.get('/api/settings', (req, res) => res.json(settings));
 app.post('/api/settings', (req, res) => {
   const { demoMode, simulation, notifications } = req.body;
