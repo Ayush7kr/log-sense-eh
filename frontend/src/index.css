@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=JetBrains+Mono&display=swap');
+
+:root {
+  --bg-main: #020617;
+  --bg-gradient: radial-gradient(circle at top left, #1d283a 0, #020617 45%, #000 100%);
+  --bg-panel: rgba(15, 23, 42, 0.65);
+  --border-panel: rgba(51, 65, 85, 0.5);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-primary: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.5);
+  --accent-critical: #ef4444;
+}
+
+.light {
+  --bg-main: #f8fafc;
+  --bg-gradient: radial-gradient(circle at top left, #f1f5f9 0, #cbd5e1 100%);
+  --bg-panel: rgba(255, 255, 255, 0.9); /* Increased opacity for better readability */
+  --border-panel: rgba(203, 213, 225, 0.8);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-primary: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.1);
+  --accent-critical: #dc2626;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-main);
+  background-image: var(--bg-gradient);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-sora {
+  font-family: 'Sora', sans-serif;
+}
+
+.glass-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-panel);
+  @apply rounded-2xl backdrop-blur-md shadow-lg;
+  transition: all 0.2s ease;
+}
+
+.glass-panel:hover {
+  border-color: var(--accent-glow);
+}
+
+.glass-input {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-panel);
+  color: var(--text-primary);
+  @apply rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none px-4 py-2 transition-all;
+}
+
+/* Fix for overlapping search icons */
+.glass-input-search {
+  @apply pl-10 pr-4;
+}
+
+.grid-background {
+  background-image: radial-gradient(circle at 1px 1px, var(--text-secondary) 0.05, transparent 0);
+  background-size: 32px 32px;
+  opacity: 0.1;
+}
+
+.neon-border-red {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+}
+
+.neon-border-blue {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  @apply opacity-30 rounded-full;
+}
+
