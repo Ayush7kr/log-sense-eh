@@ -1,5 +1,8 @@
 # Log-Sense SOC Dashboard
+
 A professional, real-time Security Operations Center (SOC) dashboard built with React, Vite, Node.js, and WebSocket streaming.
+
+---
 
 ## 🚀 Features
 
@@ -10,57 +13,107 @@ A professional, real-time Security Operations Center (SOC) dashboard built with 
 - **Natural Language "AI Search"**: Ask queries in plain English (e.g. "show failed logins from 10.0.0.7") to filter logs dynamically.
 - **Comprehensive Incident Management**: Analyst-grade investigation interface mapping events to the MITRE ATT&CK framework with timeline forensics.
 - **Dynamic Threat Heatmap**: Temporal analysis of security events to detect operational drift and off-hours activity.
-- **Premium Glassmorphism UI**: Beautifully crafted dark mode interface with neon accents, optimized typography, and fully responsive fluid layouts (Light mode completely supported).
+- **Forensic Analysis Mode**: Securely upload and process offline `.log` or `.txt` traces for deep-dive investigation.
+- **Premium Glassmorphism UI**: Beautifully crafted dark mode interface with neon accents, optimized typography, and fully responsive fluid layouts.
 
-## 🧱 Tech Stack
+---
 
-- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion, Recharts, Socket.IO Client.
-- **Backend**: Node.js, Express, Socket.IO Server, Better-SQLite3, SSH2.
+## ⚙️ Setup & Installation Guide (Step-by-Step)
 
-## ⚙️ Setup & Installation
+Follow these steps to run Log-Sense on your system.
 
-**Prerequisites:** Node.js v18+
+### 🧰 Prerequisites
 
-1. **Clone and Install dependencies:**
-   ```bash
-   # Install backend dependencies
-   cd backend
-   npm install
+Make sure the following are installed:
+- **Node.js (v18 or higher)**: [Download from nodejs.org](https://nodejs.org)
+- **npm** (comes with Node.js)
 
-   # Install frontend dependencies
-   cd ../frontend
-   npm install
-   ```
+Verify installation:
+```bash
+node -v
+npm -v
+```
 
-2. **Start the applications:**
-   ```bash
-   # Terminal 1: Start Backend (Port 4000)
-   cd backend
-   npm run dev
+### 📦 Step 1: Get the Project
 
-   # Terminal 2: Start Frontend (Port 5173)
-   cd frontend
-   npm run dev
-   ```
+#### Option A: Clone using Git
+```bash
+git clone https://github.com/Ayush7kr/log-sense-eh.git
+cd log-sense
+```
 
-3. **Access the application:** Open `http://localhost:5173` in your browser. (The backend runs on `http://localhost:4000`).
+#### Option B: Download ZIP
+- Download project ZIP and extract it.
+- Open the folder in your terminal.
 
-## ☁️ AWS EC2 Integration Example
+### 📁 Step 2: Install Dependencies
 
-To ingest live logs from an AWS EC2 Amazon Linux / Ubuntu instance:
+#### 🔹 Backend Setup
+```bash
+cd backend
+npm install
+```
 
-1. Navigate to the **Settings** page within the Log-Sense dashboard.
-2. Under "AWS EC2 Connection", enter your public EC2 IP (e.g., `3.110.131.91`).
-3. Enter your correct SSH username (usually `ec2-user` or `ubuntu`).
-4. Provide the absolute filesystem path to your `.pem` SSH key (e.g., `C:\Users\YourName\.ssh\my-key.pem`).
-5. Toggle "Enable SSH Connection" and click **Save & Connect**.
-6. Navigate to the **Live Logs** page to observe raw telemetry streaming directly from your cloud instance. (You will see `WS` indicator light up green, and logs will populate).
+#### 🔹 Frontend Setup
+```bash
+cd ../frontend
+npm install
+```
 
-## 🗃️ Application Architecture
+### 🚀 Step 3: Start the Application
 
-- **Backend Simulator**: `backend/simulator.js` contains the synthetic generation logic. Attack simulation intensity settings can be tweaked directly from the Settings UI.
-- **Rule Engine**: `backend/server.js` contains the `SecurityMonitor` class which actively scans incoming logs (both synthetic and AWS-sourced) for suspicious behavioral patterns.
-- **Real-Time Synchronization**: `frontend/src/hooks/LogsContext.jsx` manages the singleton Socket.IO connection and distributes centralized states across all visualization pages.
+You need **two terminals** running simultaneously.
+
+#### 🟢 Terminal 1 — Start Backend Server
+```bash
+cd backend
+npm run dev
+```
+You should see: `Log-Sense Backend active on PORT 4000`
+
+#### 🔵 Terminal 2 — Start Frontend
+```bash
+cd frontend
+npm run dev
+```
+You should see: `Local: http://localhost:5173/`
+
+### 🌐 Step 4: Open the Application
+
+Open your browser and navigate to: [http://localhost:5173](http://localhost:5173)
+
+---
+
+## ☁️ AWS EC2 Integration (Live Logs)
+
+To connect your system with a real AWS EC2 instance:
+
+1. **Go to Settings**: Open `Settings → AWS EC2 Connection`.
+2. **Enter Details**:
+   - **EC2 Public IP**: e.g., `3.110.131.91`
+   - **Username**: `ubuntu` (Ubuntu) or `ec2-user` (Amazon Linux).
+   - **PEM Key Path**: Full filesystem path to your `.pem` file (e.g., `C:\Users\Name\your-key.pem`).
+3. **Connect**: Toggle **Enable SSH Connection** and click **Save & Connect**.
+4. **View Logs**: Navigate to **Live Logs** to see real-time streaming (🟢 WS indicator).
+
+---
+
+## 🗃️ Project Architecture
+
+- **Backend Simulator**: `backend/simulator.js` — Generates synthetic attack logs.
+- **Rule Engine (SecurityMonitor)**: `backend/server.js` — Detects suspicious activity using heuristic rules.
+- **Real-Time Sync**: `frontend/src/hooks/LogsContext.jsx` — Manages centralized WebSocket state.
+
+---
+
+## ⚠️ Common Issues & Fixes
+
+- **Logs not appearing**: Ensure backend is running and check browser console.
+- **EC2 not connecting**: Verify `.pem` path, username, and ensure Port 22 is open in AWS.
+- **Changes not reflecting**: Restart the backend (`Ctrl + C` then `npm run dev`).
+
+---
 
 ## 🤝 Contributing
-Contributions are welcome. Please ensure that PRs adhere to the established glassmorphism UI guidelines and avoid breaking the real-time websocket streams.
+
+Contributions are welcome! Please follow the existing glassmorphism design and ensure logic remains consistent across Simulation, AWS, and Forensic modes.
