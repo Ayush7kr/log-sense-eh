@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=JetBrains+Mono&display=swap');
+/* ── Dark theme (default) ─────────────────────────────────────────────────── */
 
 :root {
   --bg-main: #020617;
@@ -12,21 +14,49 @@
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --accent-primary: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.5);
+  --accent-glow: rgba(59, 130, 246, 0.15);
   --accent-critical: #ef4444;
+  --input-bg: rgba(15, 23, 42, 0.8);
+  --select-bg: rgba(15, 23, 42, 0.9);
 }
 
+/* ── Light theme ──────────────────────────────────────────────────────────── */
+
 .light {
-  --bg-main: #f8fafc;
-  --bg-gradient: radial-gradient(circle at top left, #f1f5f9 0, #cbd5e1 100%);
-  --bg-panel: rgba(255, 255, 255, 0.9); /* Increased opacity for better readability */
-  --border-panel: rgba(203, 213, 225, 0.8);
+  --bg-main: #f0f4f8;
+  --bg-gradient: none;
+  --bg-panel: rgba(255, 255, 255, 0.95);
+  --border-panel: rgba(203, 213, 225, 0.7);
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --accent-primary: #2563eb;
-  --accent-glow: rgba(37, 99, 235, 0.1);
+  --accent-glow: rgba(37, 99, 235, 0.08);
   --accent-critical: #dc2626;
+  --input-bg: rgba(241, 245, 249, 0.9);
+  --select-bg: rgba(255, 255, 255, 1);
 }
+
+/* Force light mode overrides for specific elements */
+.light .glass-panel {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-input {
+  background: var(--input-bg);
+  border-color: var(--border-panel);
+  color: var(--text-primary);
+}
+
+.light select.glass-input {
+  background: var(--select-bg);
+}
+
+.light .glass-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* ── Globals ──────────────────────────────────────────────────────────────── */
 
 html, body, #root {
   height: 100%;
@@ -37,22 +67,30 @@ body {
   background: var(--bg-main);
   background-image: var(--bg-gradient);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
   transition: background 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Typography ───────────────────────────────────────────────────────────── */
+
 .font-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 }
 
 .font-sora {
-  font-family: 'Sora', sans-serif;
+  font-family: 'Sora', 'Inter', sans-serif;
 }
+
+/* ── Glass panel system ───────────────────────────────────────────────────── */
 
 .glass-panel {
   background: var(--bg-panel);
   border: 1px solid var(--border-panel);
-  @apply rounded-2xl backdrop-blur-md shadow-lg;
+  @apply rounded-2xl backdrop-blur-md;
   transition: all 0.2s ease;
 }
 
@@ -61,22 +99,40 @@ body {
 }
 
 .glass-input {
-  background: var(--bg-panel);
+  background: var(--input-bg);
   border: 1px solid var(--border-panel);
   color: var(--text-primary);
   @apply rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none px-4 py-2 transition-all;
 }
 
-/* Fix for overlapping search icons */
+.glass-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+/* Fix for overlapping search icons — input text starts after the icon */
 .glass-input-search {
   @apply pl-10 pr-4;
 }
 
-.grid-background {
-  background-image: radial-gradient(circle at 1px 1px, var(--text-secondary) 0.05, transparent 0);
-  background-size: 32px 32px;
-  opacity: 0.1;
+/* ── Neon ring effect (used in sidebar logo) ──────────────────────────────── */
+
+.neon-ring {
+  box-shadow:
+    0 0 8px rgba(59, 130, 246, 0.3),
+    0 0 20px rgba(59, 130, 246, 0.1),
+    inset 0 0 6px rgba(59, 130, 246, 0.1);
 }
+
+/* ── Grid background for login ────────────────────────────────────────────── */
+
+.grid-background {
+  background-image: radial-gradient(circle at 1px 1px, var(--text-secondary) 0.5px, transparent 0);
+  background-size: 32px 32px;
+  opacity: 0.08;
+}
+
+/* ── Neon border helpers ──────────────────────────────────────────────────── */
 
 .neon-border-red {
   border-color: rgba(239, 68, 68, 0.4);
@@ -88,15 +144,86 @@ body {
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
 }
 
+/* ── Log table typography ─────────────────────────────────────────────────── */
+
+.log-table {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Log Tables & Mono Text Enhancements */
+.log-table th {
+  font-family: inherit;
+  font-size: 0.70rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.75rem 1rem;
+}
+
+.log-table td {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-panel);
+}
+
+.mono-trace {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+/* ── Custom scrollbars ────────────────────────────────────────────────────── */
+
 .scroll-thin::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
+
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .scroll-thin::-webkit-scrollbar-thumb {
   background: var(--text-secondary);
-  @apply opacity-30 rounded-full;
+  @apply opacity-20 rounded-full;
 }
 
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  @apply opacity-40;
+}
+
+/* ── Status pulse animation ───────────────────────────────────────────────── */
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.status-pulse {
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+/* ── Toast notification ───────────────────────────────────────────────────── */
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast-enter {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* ── Select dropdown fix for dark mode ────────────────────────────────────── */
+
+select.glass-input option {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+.light select.glass-input option {
+  background: #ffffff;
+  color: #0f172a;
+}

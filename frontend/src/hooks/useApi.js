@@ -7,7 +7,9 @@ export function useApi(url, { pollMs } = {}) {
 
   const fetchOnce = async () => {
     try {
-      const res = await fetch(url)
+      const mode = localStorage.getItem('log-sense-mode') || 'sim';
+      const targetUrl = url.includes('?') ? `${url}&mode=${mode}` : `${url}?mode=${mode}`;
+      const res = await fetch(targetUrl)
       if (!res.ok) throw new Error(`Request failed with ${res.status}`)
       const json = await res.json()
       setData(json)

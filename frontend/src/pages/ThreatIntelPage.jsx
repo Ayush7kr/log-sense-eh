@@ -1,234 +1,240 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { Zap, ShieldAlert, CheckCircle, ShieldBan, Network } from 'lucide-react'
 import { useApi } from '../hooks/useApi'
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area
+import { useLogsContext } from '../hooks/LogsContext'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts'
-import { 
-  BarChart3, 
-  Target, 
-  ShieldAlert, 
-  Globe2, 
-  Zap, 
-  Flame,
-  Bug,
-  Ghost,
-  Activity,
-  ChevronRight,
-  Database
-} from 'lucide-react'
-
-const COLORS = ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6'];
+import { useState } from 'react'
 
 export default function ThreatIntelPage() {
   const { data: dashboard } = useApi('/api/dashboard', { pollMs: 5000 })
-  const { data: logsData } = useApi('/api/logs', { pollMs: 5000 })
-  const logs = logsData?.logs || []
-
-  const [simulating, setSimulating] = useState(false)
+  const { logs, opsMode } = useLogsContext()
+  const [simulationStatus, setSimulationStatus] = useState(null)
+  const isAwsMode = opsMode === 'aws'
+  const [attackResult, setAttackResult] = useState(null)
 
   const topIps = (() => {
-    const counts = {}
-    logs.forEach(l => counts[l.ip] = (counts[l.ip] || 0) + 1)
-    return Object.entries(counts)
-      .sort((a,b) => b[1] - a[1])
+    const ipCounts = {}
+    logs.forEach(l => {
+      ipCounts[l.ip] = (ipCounts[l.ip] || 0) + 1
+    })
+    return Object.entries(ipCounts)
+      .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([name, value]) => ({ name, value }))
   })()
 
-  const targetUsers = (() => {
-    const counts = {}
-    logs.forEach(l => counts[l.user] = (counts[l.user] || 0) + 1)
-    return Object.entries(counts)
-      .sort((a,b) => b[1] - a[1])
-      .slice(0, 4)
+  const regions = (() => {
+    // Generate dummy regions based on IPs to show varied UI
+    const regCounts = { 'North America': 0, 'Asia Pacific': 0, 'Europe': 0 }
+    logs.forEach(l => {
+      const firstOctet = parseInt(l.ip.split('.')[0] || 0, 10)
+      if (firstOctet < 100) regCounts['North America']++
+      else if (firstOctet < 180) regCounts['Asia Pacific']++
+      else regCounts['Europe']++
+    })
+    return Object.entries(regCounts)
+      .sort((a, b) => b[1] - a[1])
       .map(([name, value]) => ({ name, value }))
   })()
 
-  const launchAttack = async (type) => {
-    if (simulating) return
-    setSimulating(true)
+  const handleSimulate = async (type) => {
+    if (isAwsMode) return;
     try {
-        await fetch('/api/simulator/launch-attack', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type })
-        })
-    } finally {
-        setTimeout(() => setSimulating(false), 3000)
+      setSimulationStatus({ type, state: 'running' })
+      const resp = await fetch('/api/simulator/launch-attack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type })
+      })
+      const result = await resp.json()
+      setAttackResult({ type, ...result })
+      setSimulationStatus({ type, state: 'success' })
+      setTimeout(() => setSimulationStatus(null), 3000)
+    } catch(e) {
+      setSimulationStatus({ type, state: 'failed' })
+      setTimeout(() => setSimulationStatus(null), 3000)
     }
   }
 
+  const PIE_COLORS = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6']
+  const userStats = dashboard?.eventDistribution?.slice(0, 5) || []
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold font-sora flex items-center gap-3">
-            <BarChart3 className="w-7 h-7 text-accent-primary" />
-            Threat Intelligence
-          </h2>
-          <p className="text-sm text-text-secondary mt-1">
-            Tactical analysis of adversary patterns and infrastructure hotspots.
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Attacking IPs */}
-        <div className="glass-panel p-5 lg:col-span-2">
-          <h3 className="text-[0.7rem] uppercase tracking-widest text-text-secondary font-bold mb-6 flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-red-400" />
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Top IPs Chart */}
+        <div className="glass-panel p-5 flex-[2] relative">
+          <h3 className="text-[0.65rem] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-6 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-red-500" />
             Aggressor Infrastructure (Top IPs)
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topIps} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} opacity={0.3} />
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={10} width={100} />
-                <Tooltip 
-                    cursor={{fill: 'rgba(255,255,255,0.05)'}}
-                    contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '10px' }}
-                />
-                <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
+            {topIps.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topIps} layout="vertical">
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" fontSize={11} width={100} />
+                  <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-panel)' }} />
+                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs text-[var(--text-secondary)]">Awaiting telemetry...</div>
+            )}
           </div>
         </div>
 
-        {/* Target Profiles */}
-        <div className="glass-panel p-5">
-          <h3 className="text-[0.7rem] uppercase tracking-widest text-text-secondary font-bold mb-6 flex items-center gap-2">
-            <Target className="w-4 h-4 text-amber-400" />
+        {/* Target Users */}
+        <div className="glass-panel p-5 flex-[1]">
+          <h3 className="text-[0.65rem] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-6 flex items-center gap-2">
+            <Network className="w-4 h-4 text-amber-500" />
             Vulnerable Identities
           </h3>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={targetUsers}
-                  cx="50%" cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {targetUsers.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          <div className="h-64 relative flex flex-col items-center justify-center">
+            {userStats.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height="60%">
+                  <PieChart>
+                    <Pie data={userStats} dataKey="value" nameKey="name" innerRadius={50} outerRadius={70} paddingAngle={5}>
+                      {userStats.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-panel)', fontSize: '12px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="w-full mt-4 grid grid-cols-2 gap-2 text-[0.65rem] font-mono">
+                  {userStats.map((entry, index) => (
+                    <div key={entry.name} className="flex justify-between items-center text-[var(--text-secondary)] px-2">
+                      <span className="flex items-center gap-1.5 line-clamp-1">
+                        <span className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
+                        {entry.name}
+                      </span>
+                      <span className="font-bold text-[var(--text-primary)]">{entry.value}</span>
+                    </div>
                   ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-4 font-mono text-[0.6rem]">
-            {targetUsers.map((u, i) => (
-                <div key={u.name} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i] }} />
-                    <span className="text-text-secondary">{u.name}</span>
                 </div>
-            ))}
+              </>
+            ) : (
+              <p className="text-xs text-[var(--text-secondary)]">Awaiting telemetry...</p>
+            )}
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Simulation Sandbox */}
-        <div className="glass-panel p-5 lg:col-span-1 bg-gradient-to-br from-red-500/5 to-transparent border-red-500/20">
-            <h3 className="text-[0.7rem] uppercase tracking-widest text-red-400 font-bold mb-4 flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                Defense Sandbox
-            </h3>
-            <div className="space-y-3">
-                <p className="text-[0.65rem] text-text-secondary mb-4 leading-relaxed">
-                    Trigger synthetic attack signatures to validate alerting and rule-engine responsiveness.
-                </p>
-                <button 
-                    disabled={simulating}
-                    onClick={() => launchAttack('brute-force')}
-                    className="w-full flex items-center justify-between p-3 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-panel)] hover:border-red-500/50 hover:brightness-110 transition-all font-bold text-xs group"
-                >
-                    <div className="flex items-center gap-3">
-                        <Flame className="w-4 h-4 text-red-500 group-hover:animate-bounce" />
-                        <span>Brute Force</span>
-                    </div>
-                    {simulating ? <Activity className="w-4 h-4 animate-spin text-accent-primary" /> : <ChevronRight className="w-4 h-4 opacity-50" />}
-                </button>
-                <button 
-                    className="w-full flex items-center justify-between p-3 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-panel)] opacity-50 cursor-not-allowed font-bold text-xs"
-                >
-                    <div className="flex items-center gap-3">
-                        <Bug className="w-4 h-4 text-emerald-500" />
-                        <span>DDoS Cluster</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 opacity-0" />
-                </button>
+        {/* Simulation Controls Panel */}
+        <div className="glass-panel p-5 flex flex-col relative overflow-hidden">
+          {isAwsMode && (
+            <div className="absolute inset-0 bg-[var(--bg-main)]/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-center p-6 border border-red-500/20 rounded-2xl">
+              <ShieldBan className="w-8 h-8 text-red-500 mb-2 opacity-80" />
+              <p className="text-sm font-bold text-red-400">Controls Locked</p>
+              <p className="text-[0.65rem] text-[var(--text-secondary)] mt-1">Live data streaming from EC2. Simulations are disabled.</p>
             </div>
+          )}
+
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-[0.65rem] font-bold text-red-400 uppercase tracking-widest flex items-center gap-2">
+              <Zap className="w-4 h-4" /> Defense Sandbox
+            </h3>
+          </div>
+          <div className="space-y-3">
+            <p className="text-[0.65rem] text-[var(--text-secondary)] mb-4 leading-relaxed">
+              Trigger synthetic attack signatures to validate alerting and rule-engine responsiveness.
+            </p>
+            
+            {[
+              { type: 'brute-force', label: 'Brute Force', icon: ShieldAlert, color: 'text-orange-500' },
+              { type: 'ddos', label: 'DDoS Cluster', icon: Network, color: 'text-purple-500' },
+              { type: 'port-scan', label: 'Port Scan', icon: Zap, color: 'text-blue-500' },
+            ].map((btn) => (
+              <button
+                key={btn.type}
+                onClick={() => handleSimulate(btn.type)}
+                disabled={simulationStatus?.type === btn.type || isAwsMode}
+                className="w-full flex items-center justify-between p-3 rounded-xl border border-[var(--border-panel)] bg-[var(--bg-panel)] hover:bg-[var(--accent-glow)] transition-all group disabled:opacity-50"
+              >
+                <div className="flex items-center gap-3">
+                  <btn.icon className={`w-4 h-4 ${btn.color}`} />
+                  <span className="text-xs font-bold text-[var(--text-primary)]">{btn.label}</span>
+                </div>
+                {simulationStatus?.type === btn.type && simulationStatus.state === 'running' ? (
+                  <span className="w-3 h-3 rounded-full border-2 border-r-transparent border-emerald-500 animate-spin" />
+                ) : (
+                  <span className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">&rsaquo;</span>
+                )}
+              </button>
+            ))}
+
+            {attackResult && simulationStatus?.state === 'success' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mt-4">
+                <p className="text-[0.65rem] font-bold text-emerald-400 flex items-center gap-1.5 mb-1"><CheckCircle className="w-3 h-3" /> Attack Simulated</p>
+                <p className="text-[0.6rem] text-[var(--text-primary)] opacity-80">{attackResult.logCount} logs injected | {attackResult.sourceCount || 1} source IPs</p>
+              </motion.div>
+            )}
+          </div>
         </div>
 
-        {/* Regional Concentration */}
-        <div className="glass-panel p-5 lg:col-span-3">
-            <h3 className="text-[0.7rem] uppercase tracking-widest text-text-secondary font-bold mb-6 flex items-center gap-2">
-                <Globe2 className="w-4 h-4 text-accent-primary" />
-                Regional Adversary Concentration
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={[
-                            { name: 'North America', value: 45 },
-                            { name: 'Eurasia', value: 32 },
-                            { name: 'East Asia', value: 28 },
-                            { name: 'South Asia', value: 15 },
-                            { name: 'Latin America', value: 12 }
-                        ]}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                            <XAxis dataKey="name" stroke="#64748b" fontSize={9} />
-                            <YAxis stroke="#64748b" fontSize={9} />
-                            <Tooltip 
-                                contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: '8px' }}
-                            />
-                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-
-                <div className="space-y-3">
-                    <p className="text-[0.6rem] font-bold text-text-secondary uppercase tracking-widest mb-2">High-Risk Origins</p>
-                    {[
-                        { country: 'United States', code: 'US', threats: 1240, risk: 'Medium' },
-                        { country: 'Netherlands', code: 'NL', threats: 890, risk: 'High' },
-                        { country: 'China', code: 'CN', threats: 750, risk: 'High' },
-                        { country: 'Russia', code: 'RU', threats: 420, risk: 'Critical' }
-                    ].map(region => (
-                        <div key={region.code} className="flex items-center justify-between p-2 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-panel)]">
-                            <div className="flex items-center gap-3">
-                                <div className="w-6 h-4 bg-[var(--border-panel)] rounded-sm flex items-center justify-center text-[0.5rem] font-bold">{region.code}</div>
-                                <span className="text-xs font-semibold">{region.country}</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-[0.65rem] font-mono text-text-secondary">{region.threats} pts</span>
-                                <span className={`text-[0.5rem] font-bold px-1.5 py-0.5 rounded ${
-                                    region.risk === 'Critical' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'
-                                }`}>{region.risk}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+        {/* Global Landscape */}
+        <div className="glass-panel p-5 lg:col-span-3 flex flex-col">
+          <h3 className="text-[0.65rem] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-6 flex items-center gap-2">
+            <Network className="w-4 h-4 text-blue-500" /> Regional Adversary Concentration
+          </h3>
+          <div className="flex-1 flex flex-col md:flex-row gap-8">
+            <div className="flex-1 h-56">
+              {regions.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={regions}>
+                    <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={10} axisLine={false} tickLine={false} />
+                    <YAxis stroke="var(--text-secondary)" fontSize={10} axisLine={false} tickLine={false} />
+                    <Tooltip cursor={{ fill: 'var(--accent-glow)' }} contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-panel)' }} />
+                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs text-[var(--text-secondary)]">Awaiting telemetry...</div>
+              )}
             </div>
 
-            <div className="mt-6 flex items-center justify-between p-3 rounded-xl bg-accent-primary/5 border border-accent-primary/10">
-                <div className="flex items-center gap-3">
-                    <Database className="w-4 h-4 text-accent-primary" />
-                    <span className="text-[0.65rem] text-text-secondary">Enriched via Global Threat Matrix v4.2</span>
+            <div className="w-full md:w-64 space-y-3">
+              <p className="text-[0.6rem] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-4">Top Source Regions</p>
+              {regions.map((r, i) => (
+                <div key={r.name} className="flex items-center justify-between p-2.5 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-panel)]">
+                  <div className="flex items-center gap-3">
+                    <span className="w-5 h-5 rounded flex items-center justify-center bg-[var(--bg-main)] text-[0.6rem] font-mono text-[var(--text-secondary)]">{i + 1}</span>
+                    <span className="text-xs font-bold text-[var(--text-primary)]">{r.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[0.65rem] font-mono text-[var(--text-secondary)]">{r.value} events</span>
+                    {i === 0 && <span className="text-[0.55rem] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 border border-red-500/20">Critical</span>}
+                    {i === 1 && <span className="text-[0.55rem] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">High</span>}
+                    {i > 1 && <span className="text-[0.55rem] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">Medium</span>}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[0.55rem] font-mono font-bold text-emerald-500 uppercase">Real-time Sync</span>
-                </div>
+              ))}
             </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-[var(--border-panel)] flex items-center justify-between">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-panel)] text-[0.65rem] text-[var(--text-secondary)]">
+              <Network className="w-3.5 h-3.5 text-blue-500" />
+              Regional data computed from live log IP analysis
+            </div>
+            <div className="flex items-center gap-2 text-[0.6rem] font-mono font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              REAL-TIME
+            </div>
+          </div>
         </div>
       </div>
     </div>

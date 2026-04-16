@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Activity, AlertTriangle, CircleUserRound, TerminalSquare, TrendingUp } from 'lucide-react'
+import { Activity, AlertTriangle, CircleUserRound, TerminalSquare, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useLogsContext } from '../hooks/LogsContext'
 import { useApi } from '../hooks/useApi'
 import {
@@ -17,8 +17,16 @@ import {
 const KPI_ICON_SIZE = 18
 
 export default function OverviewPage() {
-  const { logs } = useLogsContext()
-  const { data } = useApi('/api/dashboard', { pollMs: 3000 })
+  const { logs, dashboardData } = useLogsContext()
+  const { data: polledData } = useApi('/api/dashboard', { pollMs: 5000 })
+
+  // Prefer Socket.IO data, fallback to polled
+  const data = dashboardData || polledData
+
+  const trendPct = data?.trendPct ?? 0
+  const TrendIcon = trendPct > 0 ? TrendingUp : trendPct < 0 ? TrendingDown : Minus
+  const trendColor = trendPct > 0 ? 'text-emerald-400' : trendPct < 0 ? 'text-red-400' : 'text-gray-400'
+  const trendText = trendPct > 0 ? `+${trendPct}%` : trendPct < 0 ? `${trendPct}%` : '0%'
 
   const kpis = [
     {
@@ -27,6 +35,7 @@ export default function OverviewPage() {
       icon: TerminalSquare,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
+      borderColor: 'border-blue-500/20',
     },
     {
       label: 'Failed Logins',
@@ -34,6 +43,7 @@ export default function OverviewPage() {
       icon: CircleUserRound,
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
+      borderColor: 'border-amber-500/20',
     },
     {
       label: 'High Risk',
@@ -41,6 +51,7 @@ export default function OverviewPage() {
       icon: AlertTriangle,
       color: 'text-red-400',
       bg: 'bg-red-500/10',
+      borderColor: 'border-red-500/20',
     },
     {
       label: 'Active IPs',
@@ -48,6 +59,7 @@ export default function OverviewPage() {
       icon: Activity,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
+      borderColor: 'border-emerald-500/20',
     },
   ]
 
@@ -55,18 +67,18 @@ export default function OverviewPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold font-sora text-text-primary flex items-center gap-3">
+          <h1 className="text-xl md:text-2xl font-bold font-sora text-[var(--text-primary)] flex items-center gap-3">
             Security Overview
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-400 border border-emerald-500/20">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               SYSTEM ACTIVE
             </span>
           </h1>
-          <p className="text-xs md:text-sm text-text-secondary mt-1">
+          <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">
             Real-time telemetry and heuristic analysis of ingestion pipelines.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[0.7rem] font-mono text-text-secondary">
+        <div className="flex items-center gap-2 text-[0.7rem] font-mono text-[var(--text-secondary)]">
             <HistoryIcon className="w-3.5 h-3.5" />
             Last Scan: {new Date().toLocaleTimeString()}
         </div>
@@ -85,20 +97,20 @@ export default function OverviewPage() {
             >
               <div className="relative flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-[0.65rem] text-text-secondary uppercase tracking-widest font-bold">
+                  <p className="text-[0.65rem] text-[var(--text-secondary)] uppercase tracking-widest font-bold">
                     {kpi.label}
                   </p>
-                  <p className="text-2xl font-bold tabular-nums text-text-primary">
-                    {kpi.value}
+                  <p className="text-2xl font-bold tabular-nums text-[var(--text-primary)]">
+                    {typeof kpi.value === 'number' ? kpi.value.toLocaleString() : kpi.value}
                   </p>
                 </div>
-                <div className={`p-2.5 rounded-xl ${kpi.bg} border border-${kpi.color.split('-')[1]}-500/20 transition-transform group-hover:scale-110`}>
+                <div className={`p-2.5 rounded-xl ${kpi.bg} border ${kpi.borderColor} transition-transform group-hover:scale-110`}>
                   <Icon className={`w-5 h-5 ${kpi.color}`} />
                 </div>
               </div>
-              <div className="mt-3 flex items-center gap-1 text-[0.6rem] text-text-secondary">
-                  <TrendingUp className="w-3 h-3 text-emerald-400" />
-                  <span>+12% vs last hour</span>
+              <div className={`mt-3 flex items-center gap-1 text-[0.6rem] ${trendColor}`}>
+                  <TrendIcon className="w-3 h-3" />
+                  <span>{trendText} vs last hour</span>
               </div>
             </motion.div>
           )
@@ -108,8 +120,8 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="glass-panel p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest flex items-center gap-2">
-                <Activity className="w-4 h-4 text-accent-primary" />
+            <h3 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[var(--accent-primary)]" />
                 Ingestion Velocity
             </h3>
           </div>
@@ -129,10 +141,12 @@ export default function OverviewPage() {
                     background: 'var(--bg-panel)',
                     border: '1px solid var(--border-panel)',
                     borderRadius: 12,
-                    fontSize: 10,
-                    backdropFilter: 'blur(10px)'
+                    fontSize: 11,
+                    backdropFilter: 'blur(10px)',
+                    color: 'var(--text-primary)',
                   }}
                   itemStyle={{ color: 'var(--text-primary)' }}
+                  labelStyle={{ color: 'var(--text-secondary)' }}
                 />
                 <Area
                   type="monotone"
@@ -147,8 +161,8 @@ export default function OverviewPage() {
         </div>
 
         <div className="glass-panel p-5">
-          <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest flex items-center gap-2 mb-6">
-              <PieChartIcon className="w-4 h-4 text-accent-primary" />
+          <h3 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-2 mb-6">
+              <PieChartIcon className="w-4 h-4 text-[var(--accent-primary)]" />
               Event Vector Mix
           </h3>
           <div className="h-48 flex items-center justify-center">
@@ -168,7 +182,15 @@ export default function OverviewPage() {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--bg-panel)',
+                    border: '1px solid var(--border-panel)',
+                    borderRadius: 8,
+                    fontSize: 11,
+                    color: 'var(--text-primary)',
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -177,43 +199,46 @@ export default function OverviewPage() {
               <div key={p.name} className="flex items-center justify-between text-[0.65rem]">
                 <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B'][i % 4] }} />
-                    <span className="text-text-secondary">{p.name}</span>
+                    <span className="text-[var(--text-secondary)] capitalize">{p.name}</span>
                 </div>
-                <span className="font-mono text-text-primary">{p.value}</span>
+                <span className="font-mono text-[var(--text-primary)]">{p.value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="glass-panel overflow-hidden border-accent-primary/20">
-        <div className="p-4 bg-accent-primary/5 border-b border-border-panel flex items-center justify-between">
-            <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
-                <TerminalSquare className="w-4 h-4 text-accent-primary" />
+      <div className="glass-panel overflow-hidden">
+        <div className="p-4 bg-[var(--accent-glow)] border-b border-[var(--border-panel)] flex items-center justify-between">
+            <h3 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-widest flex items-center gap-2">
+                <TerminalSquare className="w-4 h-4 text-[var(--accent-primary)]" />
                 Raw Telemetry Stream
             </h3>
-            <button className="text-[0.65rem] text-accent-primary hover:underline font-bold">View Full Stream</button>
+            <span className="text-[0.65rem] text-[var(--accent-primary)] font-bold font-mono">{logs.length} entries</span>
         </div>
         <div className="overflow-x-auto scroll-thin">
-          <table className="min-w-full text-[0.7rem] font-mono">
+          <table className="min-w-full log-table">
             <thead>
-              <tr className="border-b border-border-panel/50 text-text-secondary text-left">
-                <th className="px-6 py-3 font-medium uppercase tracking-tighter">Time</th>
-                <th className="px-6 py-3 font-medium uppercase tracking-tighter">Entity</th>
-                <th className="px-6 py-3 font-medium uppercase tracking-tighter">Source</th>
-                <th className="px-6 py-3 font-medium uppercase tracking-tighter">Event Descriptor</th>
-                <th className="px-6 py-3 font-medium uppercase tracking-tighter">Risk</th>
+              <tr className="border-b border-[var(--border-panel)] text-[var(--text-secondary)] text-left">
+                <th className="px-5 py-3">Time</th>
+                <th className="px-5 py-3">Entity</th>
+                <th className="px-5 py-3">Source</th>
+                <th className="px-5 py-3">Event Descriptor</th>
+                <th className="px-5 py-3">Risk</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-panel/30">
+            <tbody className="divide-y divide-[var(--border-panel)]" style={{ opacity: 0.01 }}>
+              {/* Invisible spacer for initial render */}
+            </tbody>
+            <tbody className="divide-y divide-[var(--border-panel)]">
               {logs.slice(0, 8).map((log) => (
-                <tr key={log.id} className="hover:bg-accent-primary/5 transition-colors group">
-                  <td className="px-6 py-3 text-text-secondary">{new Date(log.timestamp).toLocaleTimeString()}</td>
-                  <td className="px-6 py-3 text-text-primary font-bold">{log.user}</td>
-                  <td className="px-6 py-3 text-accent-primary">{log.ip}</td>
-                  <td className="px-6 py-3 text-text-secondary group-hover:text-text-primary transition-colors">{log.event}</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[0.6rem] font-bold border ${
+                <tr key={log.id} className="hover:bg-[var(--accent-glow)] transition-colors group">
+                  <td className="px-5 py-2.5 text-[var(--text-secondary)]">{new Date(log.timestamp).toLocaleTimeString()}</td>
+                  <td className="px-5 py-2.5 text-[var(--text-primary)] font-semibold">{log.user}</td>
+                  <td className="px-5 py-2.5 text-[var(--accent-primary)]">{log.ip}</td>
+                  <td className="px-5 py-2.5 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{log.event}</td>
+                  <td className="px-5 py-2.5">
+                    <span className={`px-2 py-0.5 rounded-full text-[0.65rem] font-bold border ${
                         log.risk === 'High' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
                         log.risk === 'Medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
                         'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
@@ -242,4 +267,3 @@ function PieChartIcon(props) {
         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
     )
 }
-

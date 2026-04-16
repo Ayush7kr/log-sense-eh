@@ -1,67 +1,66 @@
-# Log-Sense: AI-Powered Security Log Analysis
+# Log-Sense SOC Dashboard
+A professional, real-time Security Operations Center (SOC) dashboard built with React, Vite, Node.js, and WebSocket streaming.
 
-Log-Sense is a modern, analyst-grade security platform designed for real-time log ingestion, advanced anomaly detection, and automated threat intelligence. It provides a comprehensive SOC (Security Operations Center) experience with interactive dashboards and rule-based incident detection.
+## 🚀 Features
 
-## 🚀 Key Features
+- **Real-Time Log Ingestion**: Uses Socket.IO to stream logs instantly without polling.
+- **AWS EC2 Integration**: Connect seamlessly to remote instances via SSH to tail `auth.log` and `syslog`.
+- **Advanced Attack Simulation Engine**: Launch synthetic Brute Force, DDoS (SYN flood), and Port Scan attacks directly from the Threat Intel page.
+- **AI-Powered Anomaly Detection**: Behavioral analysis using heuristic patterns to detect credential stuffing, privilege escalation, and reconnaissance activities from your live telemetry stream.
+- **Natural Language "AI Search"**: Ask queries in plain English (e.g. "show failed logins from 10.0.0.7") to filter logs dynamically.
+- **Comprehensive Incident Management**: Analyst-grade investigation interface mapping events to the MITRE ATT&CK framework with timeline forensics.
+- **Dynamic Threat Heatmap**: Temporal analysis of security events to detect operational drift and off-hours activity.
+- **Premium Glassmorphism UI**: Beautifully crafted dark mode interface with neon accents, optimized typography, and fully responsive fluid layouts (Light mode completely supported).
 
-- **Real-time Log Ingestion**: Supports standard log patterns (SSH, Apache, Syslog) and local Windows Event Log ingestion via PowerShell.
-- **Analyst-Grade Security Monitoring**: A stateful rule engine detects complex attack patterns:
-  - **Brute Force**: Detects multiple failed login attempts within a time window.
-  - **Suspicious Login Time**: Flagging logins during off-hours (2 AM - 5 AM).
-  - **Privilege Escalation**: Detects successful admin access immediately following failed attempts.
-- **AI-Driven Anomaly Detection**: Heuristic-based scoring to identify outliers in traffic density and risk distribution.
-- **Interactive Dashboards**:
-  - **Overview**: Real-time traffic timelines and event distribution charts.
-  - **Threat Heatmap**: Visualize geographical threat origins (simulated).
-  - **Anomaly View**: Monitor model health and anomaly scores over time.
-- **Incident Management**: Workflow for investigating, blocking, and resolving security incidents with dedicated timelines.
-- **Integrated Simulator**: Launch simulated attacks (Brute Force, Port Scans, Privilege Escalation) to validate monitoring logic.
+## 🧱 Tech Stack
 
-## 🛠 Tech Stack
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion, Recharts, Socket.IO Client.
+- **Backend**: Node.js, Express, Socket.IO Server, Better-SQLite3, SSH2.
 
-### Frontend
-- **Framework**: [React 19](https://react.dev/) with [Vite](https://vitejs.dev/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Charts**: [Recharts](https://recharts.org/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+## ⚙️ Setup & Installation
 
-### Backend
-- **Environment**: [Node.js](https://nodejs.org/) with [Express](https://expressjs.com/)
-- **Database**: [Better-SQLite3](https://github.com/WiseLibs/better-sqlite3) (Fast, self-contained SQL engine)
-- **AI Integration**: [Google Generative AI (Gemini)](https://ai.google.dev/) for log summarization and analysis.
-- **Configuration**: [Dotenv](https://github.com/motdotla/dotenv) for environment variables.
+**Prerequisites:** Node.js v18+
 
-## 📦 Installation & Setup
-
-1. **Clone the repository**:
+1. **Clone and Install dependencies:**
    ```bash
-   git clone https://github.com/Ayush7kr/log-sense-eh.git
-   cd log-sense-eh
-   ```
+   # Install backend dependencies
+   cd backend
+   npm install
 
-2. **Install dependencies**:
-   Install for the root project and both components:
-   ```bash
-   npm run install:frontend
-   npm run install:backend
+   # Install frontend dependencies
+   cd ../frontend
    npm install
    ```
 
-3. **Environment Variables**:
-   Create a `.env` file in the `backend/` directory:
-   ```env
-   PORT=4000
-   GEMINI_API_KEY=your_google_gemini_api_key
-   ```
-
-4. **Run the application**:
-   From the root directory:
+2. **Start the applications:**
    ```bash
+   # Terminal 1: Start Backend (Port 4000)
+   cd backend
+   npm run dev
+
+   # Terminal 2: Start Frontend (Port 5173)
+   cd frontend
    npm run dev
    ```
-   This will start the frontend (Vite) and backend concurrently.
 
-## 📄 License
-This project is licensed under the ISC License.
+3. **Access the application:** Open `http://localhost:5173` in your browser. (The backend runs on `http://localhost:4000`).
+
+## ☁️ AWS EC2 Integration Example
+
+To ingest live logs from an AWS EC2 Amazon Linux / Ubuntu instance:
+
+1. Navigate to the **Settings** page within the Log-Sense dashboard.
+2. Under "AWS EC2 Connection", enter your public EC2 IP (e.g., `3.110.131.91`).
+3. Enter your correct SSH username (usually `ec2-user` or `ubuntu`).
+4. Provide the absolute filesystem path to your `.pem` SSH key (e.g., `C:\Users\YourName\.ssh\my-key.pem`).
+5. Toggle "Enable SSH Connection" and click **Save & Connect**.
+6. Navigate to the **Live Logs** page to observe raw telemetry streaming directly from your cloud instance. (You will see `WS` indicator light up green, and logs will populate).
+
+## 🗃️ Application Architecture
+
+- **Backend Simulator**: `backend/simulator.js` contains the synthetic generation logic. Attack simulation intensity settings can be tweaked directly from the Settings UI.
+- **Rule Engine**: `backend/server.js` contains the `SecurityMonitor` class which actively scans incoming logs (both synthetic and AWS-sourced) for suspicious behavioral patterns.
+- **Real-Time Synchronization**: `frontend/src/hooks/LogsContext.jsx` manages the singleton Socket.IO connection and distributes centralized states across all visualization pages.
+
+## 🤝 Contributing
+Contributions are welcome. Please ensure that PRs adhere to the established glassmorphism UI guidelines and avoid breaking the real-time websocket streams.

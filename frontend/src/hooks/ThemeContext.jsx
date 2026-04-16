@@ -1,27 +1,26 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
-const ThemeContext = createContext()
+const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('logsense-theme') || 'dark'
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('log-sense-theme') || 'dark'
+    }
+    return 'dark'
   })
 
   useEffect(() => {
     const root = document.documentElement
     if (theme === 'light') {
       root.classList.add('light')
-      root.removeAttribute('data-theme')
     } else {
       root.classList.remove('light')
-      root.setAttribute('data-theme', 'dark')
     }
-    localStorage.setItem('logsense-theme', theme)
+    localStorage.setItem('log-sense-theme', theme)
   }, [theme])
 
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
-  }
+  const toggleTheme = () => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -30,4 +29,8 @@ export function ThemeProvider({ children }) {
   )
 }
 
-export const useTheme = () => useContext(ThemeContext)
+export function useTheme() {
+  const ctx = useContext(ThemeContext)
+  if (!ctx) throw new Error('useTheme must be used within ThemeProvider')
+  return ctx
+}
