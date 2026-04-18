@@ -18,20 +18,41 @@ The Rule Engine operates on a per-IP basis, tracking behavioral vectors over tim
   - Explicit `PRIVILEGE_ESCALATION` log event (High Severity).
 
 ### 3. Network Reconnaissance (Port Scanning)
-- **Trigger**: Rapid sequential connection attempts to different ports or unknown descriptors.
-- **Threshold**: 8+ unique network events within 60 seconds.
+- **Trigger**: Rapid sequential connection attempts to different ports.
+- **Auto-Defense**: If 5+ scanning events occur from the same IP, the IP is automatically blacklisted.
+
+### 4. User Profiling & Behavioral Analysis
+- **Trigger**: Verification of login identity against the `user_profiles` knowledge base.
+- **Anomalies**:
+  - **New Login Location**: A successful login from an IP not previously associated with that user (Medium Severity).
+  - **Impossible Travel**: (Future roadmap) Flagging concurrent logins from disparate geographic locations.
 
 ---
 
-## 🚦 Alert vs Incident Logic
+## 🚦 Severity & Risk Scoring
 
-- **Alerts**: Immediate reactions to specific rule matches. Alerts are deduplicated; if an IP is already under a "Brute Force" alert, new failed logins increase the count of that existing alert rather than creating noise.
-- **Incidents**: Critical security events that require analyst investigation. Alerts are promoted to incidents if:
-  - The severity is `High` or `Critical`.
-  - Multiple different alerts trigger for the same attacker IP.
+Log-Sense uses a weighted scoring engine to prioritize threats:
+
+| Level | Severity Score | Risk Score | Example Event |
+| :--- | :--- | :--- | :--- |
+| **Critical** | 15 | 95 | Known Hostile IP / Multi-stage bypass |
+| **High** | 10 | 85 | Privilege Escalation / Port Scan |
+| **Medium** | 5 | 50 | Brute Force Attempt / New Location |
+| **Low** | 1 | 10 | Standard Login / System Event |
+
+---
+
+## 🛡️ Autonomous Defense (Auto-Block)
+
+The engine monitors a 2-minute sliding window. If an IP triggers:
+- 5+ Failed Logins
+- 5+ Port Scans
+- Presence in the Global Blacklist
+
+The system automatically inserts the IP into the `blocked_ips` table, immediately neutralizing the threat across the dashboard and generating a "Blocked IP Activity" critical alert.
 
 ---
 
 ## 🧹 Deduplication & Cleanup
-- The engine uses a rolling 2-minute window to correlate events.
-- Once an alert or incident is marked as `RESOLVED` in the dashboard, the engine "forgets" that attacker, allowing for fresh detection if the threat persists.
+- Alerts are deduplicated by IP and Type; subsequent events increment the risk and frequency of the existing alert rather than creating noise.
+- Once resolved, the IP's slate is cleared for fresh monitoring.

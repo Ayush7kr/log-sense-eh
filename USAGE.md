@@ -44,8 +44,41 @@ This guide walkthroughs the primary workflows for interacting with the Log-Sense
 
 ---
 
-## 🔍 General Dashboard Features
+## 🔍 Advanced Intelligence Features
 
-- **AI Search**: Use the search bar in the header to ask "Show high risk logs" or "Filter logs from IP 192...".
-- **Anomaly Detection**: Check the **Anomalies** page to see if your traffic volume or risk density is trending abnormally.
-- **Incident Resolution**: When an incident is confirmed, use the **Investigate** button to view its timeline, then **Resolve** or **Block IP** to mitigate.
+### 1. AI-Powered Search
+In the header search bar, you can use natural language or structured queries:
+- **Natural**: "Show failed logins" or "High risk logs from 192.168.1.1"
+- **Structured**: `user=root AND risk=High`
+
+### 2. Time-Travel Replay
+Located on the **Live Logs** page:
+1. Click the **Rewind** icon in the table header.
+2. Use the **Timeline Scrubber** to move backward/forward in time.
+3. Observe how traffic patterns evolved during a specific window of interest.
+4. Click **Exit Replay** to return to real-time streaming.
+
+### 3. Active Geo-Intelligence
+The **Overview** features a global map:
+- **Blue Markers**: Low risk traffic.
+- **Amber/Red Markers**: Higher risk events.
+- **Pulse**: Real-time traffic pulses indicate active ingestion from that geography.
+
+---
+
+## 🛡️ Incident Resolution & Reporting
+
+1. **Detection**: The system flags an event.
+2. **Review**: Click **Investigate** on an Incident.
+3. **AI Narrative**: Read the **Attack Story** to understand the adversary's progression.
+4. **Remediation**:
+   - Use **Block IP** to blacklist the attacker IP globally.
+   - Use **Resolve** once the threat is neutralized.
+5. **Reporting**: Click **Export Incident Report** (CSV/JSON/PDF) for archival or regulatory compliance.
+
+---
+
+## ⚙️ Configuration
+
+- **Auto-Defense**: Toggle via `Settings → Security Control`. When ON, the system blocks IPs automatically.
+- **AWS Setup**: Ensure absolute paths for `.pem` keys and verifiable IP addresses.

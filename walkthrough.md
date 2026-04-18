@@ -1,35 +1,38 @@
-# Project Walkthrough: Log-Sense
+# Project Walkthrough: Log-Sense AI SOC
 
-This guide provides a walkthrough of the Log-Sense platform features and how to use them for security analysis.
+This guide provides a functional walkthrough of the Log-Sense platform's AI-enhanced security capabilities.
 
-## 1. SOC Dashboard (Overview)
-Upon launching the application, you're greeted with the **Overview** page.
-- **Total Logs**: Live count of ingested data.
-- **Traffic Timeline**: Monitor real-time spikes in network activity.
-- **Event Distribution**: See a breakdown of logins, network connections, and privilege events.
+## 1. Defining Your Environment (Tri-Mode)
+Log-Sense operates in three distinct modes, selectable from the header or login screen:
+- **Simulation**: Safe sandbox for testing rules with synthetic attack injections.
+- **AWS Live**: Production monitoring via SSH tunneling to remote EC2 instances.
+- **Forensic**: Offline post-mortem analysis of uploaded log traces.
 
-## 2. Ingesting Real-World Data
-Log-Sense isn't just for simulation. You can ingest real data in two ways:
-- **PC Logs**: Navigate to the "PC Logs" page to pull live Windows Event Logs (System and Application) directly from your machine using PowerShell.
-- **Manual Upload**: Use the "Logs" page to paste raw log content (e.g., from `/var/log/auth.log` or Apache access logs) into the system.
+## 2. Intelligence Overview
+Upon launching, the **Overview** dashboard provides elite visual intelligence:
+- **Global Threat Map**: Live visualization of IP origins with risk-coded markers.
+- **Threat Score**: A dynamic meter representing the current environmental risk level based on active alerts and blocked IPs.
+- **AI Narrative Highlights**: Summaries of the latest critical events.
 
-## 3. Investigating Incidents
-Active attacks detected by the `SecurityMonitor` appear in the **Incidents** page.
-- Click an incident to open the **Investigation View**.
-- View a correlated timeline of logs surrounding the event to see what the "attacker" did before and after the alert.
-- Mark incidents as **Blocked** or **Resolved** to update the system state.
+## 3. Real-Time Investigation & Time-Travel
+Navigate to **Live Logs** to see the heartbeat of your system:
+- **Contextual Explanations**: Hover over or view any log to see AI-generated risk context explaining *why* an event is suspicious.
+- **Time-Travel Replay**: Click the rewind icon to scrub through historical log data and visualize attack progressions as they happened.
+- **Pattern Clusters**: View the "Discovered Patterns" card to see anomalous frequency clusters identified by the engine.
 
-## 4. Anomaly Detection
-The **Anomaly Detection** page visualizes the mathematical "health" of your log stream.
-- **Anomaly Score**: A real-time calculated risk factor based on IP density and high-risk event frequency.
-- **Model Health**: Indicators ranging from "Healthy" to "Degraded" based on high-risk traffic percentage.
+## 4. Autonomous Defense
+Under **Settings**, enable **Autonomous Defense**:
+- Transition from passive monitoring to active protection.
+- The system automatically blacklists IPs that exceed brute-force or port-scanning thresholds.
+- Blacklisted IPs are visualized with a pulse on the map and tagged in the logs.
 
-## 5. Threat Simulation
-For demonstration purposes, you can launch simulated attacks:
-- Go to the **Security Simulation** settings or the **Alerts** page.
-- Launch a "Brute Force" attack.
-- Watch as the background simulator injects high-risk logs, which are then picked up by the `SecurityMonitor`, triggering real-time alerts and incidents in the UI.
+## 5. Incident Management & AI Narratives
+When a threat escalates, it becomes an **Incident**:
+- **Attack Story**: Gemini AI synthesizes the incident timeline into a human-readable narrative.
+- **Forensic Timeline**: A detailed packet of related logs and alerts for deep-dive analysis.
+- **Remediation**: Block the attacker's IP or resolve the incident with a single click.
 
-## 6. AI Insights (Gemini)
-The platform integrates **Google Gemini** to help security analysts.
-- Use the **Threat Intel** or **Incident Details** pages to get AI-generated summaries of logs, helping you understand complex patterns without manual regex work.
+## 6. Regulatory Reporting
+Export your findings for compliance or archival:
+- **Incident Reports**: Generate detailed CSV/JSON reports for specific investigations.
+- **Raw Data Export**: Bulk export logs from any time-range for external SIEM integration.

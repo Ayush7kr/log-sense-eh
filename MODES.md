@@ -25,12 +25,13 @@ Log-Sense uses a Tri-Mode architecture to provide versatile security analysis en
 **Purpose**: Post-mortem analysis of security events from static log files.
 - **Inbound Data**: Provided via user upload (`POST /api/forensic/upload`).
 - **Enabled Features**:
-  - Bulk log parsing.
-  - Static event security scanning.
+  - **AI-Assisted Intelligent Log Parsing**: Uses Gemini AI to dynamically extract entities (IP, User, Event) from unstructured bulk text.
+  - **Static Security Intelligence Scan**: Immediate application of the rule engine to the uploaded dataset.
+  - **Contextual Risk Enrichment**: AI explanations generated for every parsed event.
 - **Disabled/Modified Features**:
-  - Simulation disabled.
-  - Real-time streaming is simulated (parsing happens on upload).
-- **Behavior**: Every new upload clears previous Forensic data to ensure a clean investigation state.
+  - Attack Simulation barred.
+  - Real-time streaming is simulated (log-ingestion events emitted on upload).
+- **Behavior**: To ensure investigation integrity, every new upload initiates a **Hard Reset** of global forensic state, clearing previous logs, alerts, and incidents.
 
 ---
 

@@ -49,6 +49,7 @@ db.exec(`
     timestamp TEXT NOT NULL,
     type TEXT NOT NULL,
     severity TEXT NOT NULL,
+    severity_score INTEGER NOT NULL DEFAULT 0,
     description TEXT NOT NULL,
     status TEXT DEFAULT 'open',
     attacker_ip TEXT,
@@ -58,10 +59,32 @@ db.exec(`
     source TEXT NOT NULL DEFAULT 'SIMULATION'
   );
 
+  CREATE TABLE IF NOT EXISTS user_profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user TEXT NOT NULL,
+    known_ips TEXT NOT NULL DEFAULT '[]',
+    login_count INTEGER DEFAULT 0,
+    last_login TEXT,
+    source TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS geo_cache (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip TEXT NOT NULL,
+    country TEXT,
+    city TEXT,
+    lat REAL,
+    lon REAL,
+    updated_at TEXT,
+    source TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS blocked_ips (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ip TEXT NOT NULL UNIQUE,
-    created_at TEXT NOT NULL
+    ip TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'SIMULATION',
+    created_at TEXT NOT NULL,
+    UNIQUE(ip, source)
   );
 
   CREATE TABLE IF NOT EXISTS settings (
@@ -90,6 +113,8 @@ try {
     CREATE INDEX IF NOT EXISTS idx_alerts_status ON alerts(status);
     CREATE INDEX IF NOT EXISTS idx_incidents_timestamp ON incidents(timestamp);
     CREATE INDEX IF NOT EXISTS idx_blocked_ips_ip ON blocked_ips(ip);
+    CREATE INDEX IF NOT EXISTS idx_user_profiles_user ON user_profiles(user, source);
+    CREATE INDEX IF NOT EXISTS idx_geo_cache_ip ON geo_cache(ip, source);
   `);
 } catch {
   // indexes may already exist
@@ -99,6 +124,17 @@ try {
 try { db.exec("ALTER TABLE logs ADD COLUMN source TEXT NOT NULL DEFAULT 'SIMULATION';"); } catch(e) {}
 try { db.exec("ALTER TABLE alerts ADD COLUMN source TEXT NOT NULL DEFAULT 'SIMULATION';"); } catch(e) {}
 try { db.exec("ALTER TABLE incidents ADD COLUMN source TEXT NOT NULL DEFAULT 'SIMULATION';"); } catch(e) {}
+try { db.exec("ALTER TABLE alerts ADD COLUMN severity_score INTEGER NOT NULL DEFAULT 0;"); } catch(e) {}
+try { db.exec("ALTER TABLE incidents ADD COLUMN severity_score INTEGER NOT NULL DEFAULT 0;"); } catch(e) {}
+try { db.exec("ALTER TABLE blocked_ips ADD COLUMN source TEXT NOT NULL DEFAULT 'SIMULATION';"); } catch(e) {}
+
+// Seed auto_defense setting
+try {
+  const existing = db.prepare("SELECT key FROM settings WHERE key = 'auto_defense'").get();
+  if (!existing) {
+    db.prepare("INSERT INTO settings (key, value) VALUES ('auto_defense', 'true')").run();
+  }
+} catch(e) {}
 
 // Seed default EC2 config if missing
 try {

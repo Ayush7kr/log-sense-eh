@@ -6,15 +6,14 @@ A professional, real-time Security Operations Center (SOC) dashboard built with 
 
 ## 🚀 Features
 
+- **AI-Powered Narrative & Risk Explanation**: Uses Gemini AI to transform complex log sequences into human-readable attack stories and provides multi-layered risk context for every event.
+- **Autonomous Defense Engine**: Real-time heuristic monitoring with automatic IP blocking for aggressive brute-force and scanning patterns.
+- **Global Threat Intelligence Map**: Visualizes attacker geography in real-time using high-precision IP geolocation.
+- **Time-Travel Log Replay**: Revolutionary rewind capability to visualize historical traffic patterns as they occurred.
 - **Real-Time Log Ingestion**: Uses Socket.IO to stream logs instantly without polling.
-- **AWS EC2 Integration**: Connect seamlessly to remote instances via SSH to tail `auth.log` and `syslog`.
-- **Advanced Attack Simulation Engine**: Launch synthetic Brute Force, DDoS (SYN flood), and Port Scan attacks directly from the Threat Intel page.
-- **AI-Powered Anomaly Detection**: Behavioral analysis using heuristic patterns to detect credential stuffing, privilege escalation, and reconnaissance activities from your live telemetry stream.
-- **Natural Language "AI Search"**: Ask queries in plain English (e.g. "show failed logins from 10.0.0.7") to filter logs dynamically.
-- **Comprehensive Incident Management**: Analyst-grade investigation interface mapping events to the MITRE ATT&CK framework with timeline forensics.
-- **Dynamic Threat Heatmap**: Temporal analysis of security events to detect operational drift and off-hours activity.
-- **Forensic Analysis Mode**: Securely upload and process offline `.log` or `.txt` traces for deep-dive investigation.
-- **Premium Glassmorphism UI**: Beautifully crafted dark mode interface with neon accents, optimized typography, and fully responsive fluid layouts.
+- **AWS EC2 Native Integration**: Secure SSH tunneling to tail `auth.log` and `syslog` from remote production instances.
+- **Forensic Upload Engine**: AI-assisted parsing of offline `.log` traces with immediate security intelligence application.
+- **Premium Glassmorphism UI**: Elite dark-mode interface with neon accents, optimized for high-density security monitoring.
 
 ---
 

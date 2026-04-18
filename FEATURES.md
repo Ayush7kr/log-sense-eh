@@ -9,22 +9,25 @@ Log-Sense is a comprehensive SOC platform designed for real-time monitoring, att
 - **Relational SOC Pipeline**: Strict mapping from raw logs to rules-based alerts and investigative incidents.
 - **Unified Security Schema**: Consistent data format for authentication, network, and system events.
 
-## 🚀 Advanced Features
+## 🧠 AI Intelligence Layer
 
-- **AWS EC2 Native Link**: Direct SSH integration to ingest remote `auth.log` data securely.
-- **Heuristic Rule Engine**: Real-time detection of Brute Force, Port Scanning, and Privilege Escalation.
-- **Attack Simulator**: One-click generation of synthetic attack patterns (DDoS, Brute Force, Reconnaissance).
-- **Forensic Upload Engine**: Bulk processing of offline `.log` files with immediate security intelligence application.
-- **AI-Driven Search**: Natural language processing to query security data in plain English.
-- **Anomaly Scoring**: Rolling behavioral analysis that detects deviations in traffic patterns and event density.
+- **Generative Attack Narratives**: Automatically transforms raw log sequences into coherent security narratives using Gemini AI.
+- **Contextual Risk Explanation**: Real-time natural language explanation for every log entry, providing analysts with instant context on potential threats.
+- **AI-Driven Search**: Query security data in plain English with semantic understanding of intent.
+- **Intelligent Forensic Parsing**: AI-assisted extraction of security events from unstructured bulk log files.
+
+## 🛡️ Autonomous Defense
+
+- **Dynamic IP Blocking**: Automatic firewall-level blocking of IPs exceeding brute-force or scanning thresholds.
+- **User Profiling & Anomaly Detection**: Tracks behavioral baselines (known IPs, login patterns) and alerts on geographic or temporal anomalies.
+- **Real-Time Global Threat Map**: Live geolocation of all ingest events with risk-based visual grading.
 
 ## 🎨 UI & UX Features
 
 - **Premium Glassmorphism Design**: High-end dark mode interface with vibrant neon accents and fluid animations.
 - **Real-Time Visualizations**:
-  - **Threat Heatmap**: Time-series density map of security events.
-  - **Mode Badges**: Clearly visible indicators for active system state (SIM / AWS / FOR).
-  - **Live Stream View**: Interactive table with real-time risk grading.
-- **Deep-Dive Investigation Portal**: Centralized interface for timeline forensics, related alerts, and attacker IP blocking.
-- **Analyst-Centric Dashboards**: KPI-driven overviews with automatic trends and distribution metrics.
-- **Responsive Layout**: Seamless transition between desktop and medium-scale tablet views.
+  - **Global Threat Map**: High-precision geographic visualization of incoming security events.
+  - **Time-Travel Replay**: Full historical replay capabilities with interactive timeline scrubbing.
+  - **Dynamic Threat Score**: Instantaneous "Defcon" style risk visualization of the current mode.
+- **Advanced Export Suite**: Generate comprehensive PDF/CSV incident reports and raw log exports with one click.
+- **Deep-Dive Investigation Portal**: Centralized interface for timeline forensics, related alerts, and manual IP remediation.

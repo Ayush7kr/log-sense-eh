@@ -48,6 +48,12 @@ export default function AlertsPage() {
 
   const handleAction = async (alertId, action) => {
     try {
+      if (action === 'resolve') {
+        setDbAlerts(dbAlerts.filter(a => a.id !== alertId));
+      } else if (action === 'investigate') {
+        setDbAlerts(dbAlerts.map(a => a.id === alertId ? { ...a, status: 'investigating' } : a));
+      }
+
       await fetch(`/api/alerts/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -193,6 +199,12 @@ export default function AlertsPage() {
 
                     <div className="text-[0.75rem] text-[var(--text-secondary)] mb-4 flex-1">
                       <p className="leading-relaxed font-medium text-[var(--text-primary)]">{alert.description}</p>
+                      {alert.explanation && (
+                        <div className="mt-2 p-2 bg-blue-500/5 border border-blue-500/20 rounded-md text-blue-300">
+                          <span className="font-bold text-[0.65rem] uppercase block mb-1">AI Risk Context</span>
+                          {alert.explanation}
+                        </div>
+                      )}
                       <div className="mt-3 text-[0.65rem] space-y-1">
                         <p>Target IP: <span className="font-mono text-blue-400">{alert.ip}</span></p>
                         <p>Trigger Time: {new Date(alert.timestamp).toLocaleString()}</p>

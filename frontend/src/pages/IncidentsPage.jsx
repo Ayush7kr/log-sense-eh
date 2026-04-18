@@ -91,16 +91,16 @@ export default function IncidentsPage() {
                 className={`glass-panel p-4 cursor-pointer hover:border-[var(--accent-primary)] transition-all ${selectedIncident?.id === incident.id ? 'border-[var(--accent-primary)] bg-[var(--accent-glow)]' : ''}`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-sm text-[var(--text-primary)]">{incident.type}</h3>
+                  <h3 className="font-bold text-sm text-[var(--text-primary)]">{incident.type || 'Unknown Threat Event'}</h3>
                   <span className={`text-[0.6rem] font-bold px-2 py-0.5 rounded-full border ${getStatusColor(incident.status)} uppercase`}>
                     {incident.status}
                   </span>
                 </div>
-                <p className="text-[0.7rem] text-[var(--text-secondary)] mb-3 line-clamp-2">{incident.description}</p>
+                <p className="text-[0.7rem] text-[var(--text-secondary)] mb-3 line-clamp-2">{incident.description || 'Insufficient telemetry available for this incident.'}</p>
                 <div className="flex items-center gap-4 text-[0.65rem] font-mono">
                   <div className="flex items-center gap-1.5 text-blue-400">
                     <Network className="w-3.5 h-3.5" />
-                    <span>{incident.attacker_ip}</span>
+                    <span>{incident.attacker_ip || 'Unknown IP'}</span>
                   </div>
                 </div>
               </motion.div>
@@ -119,7 +119,7 @@ export default function IncidentsPage() {
           <div className="p-5 md:p-6 border-b border-[var(--border-panel)] flex items-start justify-between bg-gradient-to-br from-red-500/5 to-transparent">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-xl font-bold font-sora text-[var(--text-primary)]">{selectedIncident.type}</h3>
+                <h3 className="text-xl font-bold font-sora text-[var(--text-primary)]">{selectedIncident.type || 'Unknown Threat Event'}</h3>
                 <span className={`px-2 py-0.5 text-[0.6rem] font-bold uppercase rounded-full border ${getStatusColor(selectedIncident.status)}`}>
                   {selectedIncident.status}
                 </span>
@@ -127,12 +127,21 @@ export default function IncidentsPage() {
                   INC-{selectedIncident.id}
                 </span>
               </div>
-              <p className="text-sm text-[var(--text-secondary)]">{selectedIncident.description}</p>
+              <p className="text-sm text-[var(--text-secondary)]">{selectedIncident.description || 'Insufficient telemetry available for this incident.'}</p>
             </div>
             <button onClick={() => setSelectedIncident(null)} className="p-2 hover:bg-[var(--bg-main)] rounded-full transition-colors hidden md:block">
               <X className="w-5 h-5 text-[var(--text-secondary)]" />
             </button>
           </div>
+
+          {selectedIncident.story && (
+            <div className="px-5 md:px-6 py-4 bg-[var(--bg-panel)] border-b border-[var(--border-panel)]">
+              <h4 className="text-[0.65rem] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+                Attack Narrative
+              </h4>
+              <p className="text-sm text-[var(--text-primary)] leading-relaxed">{selectedIncident.story}</p>
+            </div>
+          )}
 
           <div className="p-3 bg-[var(--bg-main)] border-b border-[var(--border-panel)] flex flex-wrap gap-4">
             <button 
@@ -150,6 +159,13 @@ export default function IncidentsPage() {
               <CheckCircle className="w-4 h-4" />
               Mark Resolved
             </button>
+            <button 
+              onClick={() => window.open(`/api/export/incident-report?id=${selectedIncident.id}&format=csv`, '_blank')}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-all flex items-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              Export Report
+            </button>
           </div>
 
           {/* Timeline and Logs View */}
@@ -161,17 +177,22 @@ export default function IncidentsPage() {
                 {/* Visual Timeline Graph */}
                 <div className="space-y-4">
                   <h4 className="text-[0.65rem] font-bold text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-2">
-                    <History className="w-4 h-4" /> Event Trace Timeline
+                    <History className="w-4 h-4" /> Vertical Incident Timeline
                   </h4>
-                  <div className="bg-[var(--bg-main)] border border-[var(--border-panel)] rounded-xl p-4 md:p-6 overflow-x-auto scroll-thin">
-                    <div className="flex items-center min-w-max gap-4 px-4 py-8">
+                  <div className="bg-[var(--bg-main)] border border-[var(--border-panel)] rounded-xl p-4 md:p-6 overflow-y-auto scroll-thin max-h-[500px]">
+                    <div className="flex flex-col gap-6 relative px-2">
+                      {/* Vertical Line */}
+                      <div className="absolute top-2 bottom-2 left-[1.35rem] w-0.5 bg-[var(--border-panel)] z-0" />
+
                       {/* Attacker Node */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 rounded-full border-2 border-amber-500/50 bg-amber-500/10 flex items-center justify-center neon-ring">
-                          <Network className="w-5 h-5 text-amber-400" />
+                      <div className="flex items-start gap-4 relative z-10">
+                        <div className="w-10 h-10 rounded-full border-2 border-amber-500/50 bg-[#151515] flex items-center justify-center neon-ring shadow-lg shadow-amber-500/20 shrink-0">
+                          <Network className="w-4 h-4 text-amber-400" />
                         </div>
-                        <p className="text-[0.65rem] font-mono mt-3 text-amber-400 max-w-[100px] text-center truncate">{selectedIncident.attacker_ip}</p>
-                        <p className="text-[0.55rem] text-[var(--text-secondary)] uppercase">Attacker IP</p>
+                        <div className="pt-2 flex-1">
+                          <p className="text-[0.65rem] font-mono text-amber-400 truncate">{selectedIncident.attacker_ip || 'Unknown IP'}</p>
+                          <p className="text-[0.55rem] text-[var(--text-secondary)] uppercase">Attacker IP Origin</p>
+                        </div>
                       </div>
 
                       {/* Timeline Events from JSON */}
@@ -179,15 +200,14 @@ export default function IncidentsPage() {
                         let parsedT = [];
                         try { parsedT = JSON.parse(selectedIncident.timeline) } catch(e){}
                         return parsedT.map((evt, idx) => (
-                          <div key={idx} className="flex items-center">
-                            <ArrowRight className="w-6 h-6 text-[var(--border-panel)] mx-2 shrink-0" />
-                            <div className="flex flex-col items-center">
-                              <div className="w-12 h-12 rounded-xl border border-red-500/30 bg-[var(--bg-panel)] flex items-center justify-center relative shadow-lg shadow-red-500/10">
-                                <AlertTriangle className="w-4 h-4 text-red-500" />
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[0.5rem] font-bold w-4 h-4 rounded-full flex items-center justify-center">{idx + 1}</span>
-                              </div>
-                              <p className="text-[0.6rem] font-semibold mt-3 text-[var(--text-primary)] max-w-[120px] text-center">{evt.step}</p>
-                              <p className="text-[0.55rem] text-[var(--text-secondary)] mt-0.5">{new Date(evt.time).toLocaleTimeString()}</p>
+                          <div key={idx} className="flex items-start gap-4 group relative z-10">
+                            <div className="w-10 h-10 rounded-xl border border-red-500/30 bg-[var(--bg-panel)] flex items-center justify-center relative shadow-lg shadow-red-500/10 shrink-0 group-hover:bg-red-500/10 transition-colors">
+                              <AlertTriangle className="w-4 h-4 text-red-500" />
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[0.45rem] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-lg">{idx + 1}</span>
+                            </div>
+                            <div className="bg-[var(--bg-panel)] border border-[var(--border-panel)] px-3 py-2.5 rounded-lg flex-1 shadow-md group-hover:border-red-500/30 transition-colors">
+                              <p className="text-xs font-semibold text-[var(--text-primary)]">{evt.step}</p>
+                              <p className="text-[0.6rem] text-[var(--text-secondary)] mt-1">{new Date(evt.time).toLocaleString()}</p>
                             </div>
                           </div>
                         ))
@@ -213,7 +233,10 @@ export default function IncidentsPage() {
                           <tr key={log.id} className="hover:bg-[var(--accent-glow)] transition-colors">
                             <td className="text-[var(--text-secondary)]">{new Date(log.timestamp).toLocaleTimeString()}</td>
                             <td className="text-blue-400 mono-trace">{log.ip}</td>
-                            <td className={`mono-trace ${log.risk === 'High' ? 'text-red-400' : 'text-[var(--text-primary)]'}`}>{log.event}</td>
+                            <td className="py-2">
+                              <span className={`mono-trace ${log.risk === 'High' ? 'text-red-400' : 'text-[var(--text-primary)]'}`}>{log.event}</span>
+                              {log.explanation && <p className="text-[0.65rem] text-[var(--text-secondary)] mt-0.5">{log.explanation}</p>}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

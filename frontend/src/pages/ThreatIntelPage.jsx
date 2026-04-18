@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Zap, ShieldAlert, CheckCircle, ShieldBan, Network } from 'lucide-react'
 import { useApi } from '../hooks/useApi'
 import { useLogsContext } from '../hooks/LogsContext'
+import MapComponent from '../components/MapComponent'
 import {
   BarChart,
   Bar,
@@ -20,6 +21,8 @@ export default function ThreatIntelPage() {
   const { logs, opsMode } = useLogsContext()
   const [simulationStatus, setSimulationStatus] = useState(null)
   const isAwsMode = opsMode === 'aws'
+  const isForensicMode = opsMode === 'forensic'
+  const isLockedMode = isAwsMode || isForensicMode
   const [attackResult, setAttackResult] = useState(null)
 
   const topIps = (() => {
@@ -48,7 +51,7 @@ export default function ThreatIntelPage() {
   })()
 
   const handleSimulate = async (type) => {
-    if (isAwsMode) return;
+    if (isLockedMode) return;
     try {
       setSimulationStatus({ type, state: 'running' })
       const resp = await fetch('/api/simulator/launch-attack', {
@@ -135,11 +138,13 @@ export default function ThreatIntelPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Simulation Controls Panel */}
         <div className="glass-panel p-5 flex flex-col relative overflow-hidden">
-          {isAwsMode && (
+          {isLockedMode && (
             <div className="absolute inset-0 bg-[var(--bg-main)]/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-center p-6 border border-red-500/20 rounded-2xl">
               <ShieldBan className="w-8 h-8 text-red-500 mb-2 opacity-80" />
               <p className="text-sm font-bold text-red-400">Controls Locked</p>
-              <p className="text-[0.65rem] text-[var(--text-secondary)] mt-1">Live data streaming from EC2. Simulations are disabled.</p>
+              <p className="text-[0.65rem] text-[var(--text-secondary)] mt-1">
+                {isAwsMode ? 'Live data streaming from EC2. Simulations are disabled.' : 'Forensic analysis active. Simulations are disabled.'}
+              </p>
             </div>
           )}
 
@@ -161,7 +166,7 @@ export default function ThreatIntelPage() {
               <button
                 key={btn.type}
                 onClick={() => handleSimulate(btn.type)}
-                disabled={simulationStatus?.type === btn.type || isAwsMode}
+                disabled={simulationStatus?.type === btn.type || isLockedMode}
                 className="w-full flex items-center justify-between p-3 rounded-xl border border-[var(--border-panel)] bg-[var(--bg-panel)] hover:bg-[var(--accent-glow)] transition-all group disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
@@ -191,19 +196,8 @@ export default function ThreatIntelPage() {
             <Network className="w-4 h-4 text-blue-500" /> Regional Adversary Concentration
           </h3>
           <div className="flex-1 flex flex-col md:flex-row gap-8">
-            <div className="flex-1 h-56">
-              {regions.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={regions}>
-                    <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={10} axisLine={false} tickLine={false} />
-                    <YAxis stroke="var(--text-secondary)" fontSize={10} axisLine={false} tickLine={false} />
-                    <Tooltip cursor={{ fill: 'var(--accent-glow)' }} contentStyle={{ background: 'var(--bg-panel)', border: '1px solid var(--border-panel)' }} />
-                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={60} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs text-[var(--text-secondary)]">Awaiting telemetry...</div>
-              )}
+            <div className="flex-1 h-[300px]">
+              <MapComponent />
             </div>
 
             <div className="w-full md:w-64 space-y-3">

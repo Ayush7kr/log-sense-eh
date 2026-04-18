@@ -24,15 +24,28 @@ Find solutions to common issues encountered when setting up or running the Log-S
 3. If in **AWS Mode**, verify that the target log file exists on the server (by default `/var/log/auth.log`).
 
 ### ❌ AI Search is not returning results
-- Ensure you have logs matching the query in the currently active mode. AI search is mode-sensitive.
+- Ensure you have logs matching the query in the currently active mode.
+- Check the `GEMINI_API_KEY` in `backend/.env`. If missing, complex NLP searches fall back to standard regex search.
+
+### ❌ Forensic Parsing is inaccurate
+- For unstructured logs, ensure `GEMINI_API_KEY` is present. AI-assisted parsing provides significantly higher accuracy for non-standard log formats.
+
+---
+
+## 🗺️ Geographic Map
+
+### ❌ Map markers are missing or "Unknown"
+- **Reason 1**: The traffic originates from **Private IPs** (e.g., `192.168.x.x`, `10.x.x.x`, `localhost`). These cannot be geolocated.
+- **Reason 2**: API throttle. We use `ip-api.com` which has rate limits for free tiers.
+- **Reason 3**: Backend networking. Ensure the server has outbound internet access to reach the geolocation provider.
 
 ---
 
 ## 💻 UI/Frontend Issues
 
-### ❌ White screen on load
-- Ensure `npm install` was successful in the `frontend` folder.
-- Restart the dev server: `npm run dev`.
+### ❌ Time-Travel Replay isn't working
+- Ensure the selected time range actually contains logs. Replay requires at least two distinct timestamps to generate a scrubber range.
+- Restart the frontend if the WebSocket connection is unstable.
 
 ### ❌ Changes to code not appearing
 - The Vite dev server usually hot-reloads. If it fails, refresh the page or restart the frontend console.

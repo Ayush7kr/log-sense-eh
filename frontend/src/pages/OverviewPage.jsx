@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Activity, AlertTriangle, CircleUserRound, TerminalSquare, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Activity, AlertTriangle, CircleUserRound, TerminalSquare, TrendingUp, TrendingDown, Minus, ShieldAlert } from 'lucide-react'
 import { useLogsContext } from '../hooks/LogsContext'
 import { useApi } from '../hooks/useApi'
 import {
@@ -17,8 +17,9 @@ import {
 const KPI_ICON_SIZE = 18
 
 export default function OverviewPage() {
-  const { logs, dashboardData } = useLogsContext()
-  const { data: polledData } = useApi('/api/dashboard', { pollMs: 5000 })
+  const { logs, dashboardData, opsMode } = useLogsContext()
+  const { data: polledData } = useApi(`/api/dashboard?mode=${opsMode}`, { pollMs: 5000 })
+  const { data: threatData } = useApi(`/api/threat-score?mode=${opsMode}`, { pollMs: 5000 })
 
   // Prefer Socket.IO data, fallback to polled
   const data = dashboardData || polledData
@@ -115,6 +116,53 @@ export default function OverviewPage() {
             </motion.div>
           )
         })}
+      </div>
+
+      {/* Threat Score Meter */}
+      <div className="glass-panel p-6 flex flex-col sm:flex-row items-center gap-6">
+        <div className="relative w-36 h-36 shrink-0">
+          <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border-panel)" strokeWidth="8" />
+            <circle
+              cx="60" cy="60" r="52"
+              fill="none"
+              stroke={threatData?.level === 'Critical' ? '#ef4444' : threatData?.level === 'High' ? '#f97316' : threatData?.level === 'Medium' ? '#f59e0b' : '#10b981'}
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${(threatData?.score || 0) * 3.267} 326.7`}
+              className="transition-all duration-1000 ease-out"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-3xl font-bold tabular-nums text-[var(--text-primary)]">{threatData?.score ?? 0}</span>
+            <span className={`text-[0.6rem] font-bold uppercase tracking-wider ${
+              threatData?.level === 'Critical' ? 'text-red-400' : threatData?.level === 'High' ? 'text-orange-400' : threatData?.level === 'Medium' ? 'text-amber-400' : 'text-emerald-400'
+            }`}>{threatData?.level || 'Low'}</span>
+          </div>
+        </div>
+        <div className="flex-1 space-y-3">
+          <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+            <ShieldAlert className={`w-5 h-5 ${threatData?.level === 'Critical' ? 'text-red-400' : threatData?.level === 'High' ? 'text-orange-400' : threatData?.level === 'Medium' ? 'text-amber-400' : 'text-emerald-400'}`} />
+            SOC Threat Index
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+            Composite score derived from active alerts, open incidents, and blocked IP addresses within the current operating mode.
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-[var(--bg-main)] p-2 rounded-lg border border-[var(--border-panel)] text-center">
+              <p className="text-lg font-bold tabular-nums text-red-400">{threatData?.activeAlerts ?? 0}</p>
+              <p className="text-[0.55rem] text-[var(--text-secondary)] uppercase font-bold">Alerts</p>
+            </div>
+            <div className="bg-[var(--bg-main)] p-2 rounded-lg border border-[var(--border-panel)] text-center">
+              <p className="text-lg font-bold tabular-nums text-amber-400">{threatData?.activeIncidents ?? 0}</p>
+              <p className="text-[0.55rem] text-[var(--text-secondary)] uppercase font-bold">Incidents</p>
+            </div>
+            <div className="bg-[var(--bg-main)] p-2 rounded-lg border border-[var(--border-panel)] text-center">
+              <p className="text-lg font-bold tabular-nums text-blue-400">{threatData?.blockedIPs ?? 0}</p>
+              <p className="text-[0.55rem] text-[var(--text-secondary)] uppercase font-bold">Blocked</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

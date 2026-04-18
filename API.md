@@ -10,64 +10,64 @@ Fetch the most recent logs for the active mode.
 - **Returns**: `{ logs: [] }`
 
 ### `GET /api/dashboard`
-Fetch aggregated KPI data (total logs, failed logins, high risk count, active IPs).
-- **Query Params**: `mode` (optional)
-- **Returns**: Dashboard metric object.
+Fetch aggregated KPI data (total logs, failed logins, high risk count, active IPs) for the active mode.
 
-### `GET /api/system-logs`
-Fetch specifically flagged `SYSTEM_EVENT` logs (e.g., mode switches).
+### `GET /api/logs/clusters`
+Fetch discovered event patterns (IP-Event grouping) for spatial-temporal analysis.
+
+### `GET /api/threat-score`
+Fetch the dynamic mode-specific risk score (0-100) and threat categorization.
+
+---
+
+## 🛰️ Geo-Intelligence
+
+### `GET /api/geo-data`
+Fetch real-time geolocation mapping for all active traffic in the current mode.
+- **Returns**: `{ geoData: [{ ip, country, city, lat, lon, risk }] }`
 
 ---
 
 ## 🛡️ Alerts & Incidents
 
 ### `GET /api/alerts`
-Fetch active security alerts.
-- **Query Params**: `mode`
-
-### `POST /api/alerts/investigate`
-Change an alert's status to `investigating`.
-- **Body**: `{ alertId: number }`
+Fetch active security alerts with AI-generated risk explanations.
 
 ### `GET /api/incidents`
-Fetch current security incidents.
+Fetch current security incidents with AI-synthesized attack narratives.
+
+### `GET /api/incidents/:id`
+Fetch deep-dive incident packet including related logs and full forensic timeline.
 
 ---
 
 ## ⚙️ Configuration & Control
 
-### `POST /api/settings/mode`
-Switch the operational mode globally.
-- **Body**: `{ mode: 'aws' | 'sim' | 'forensic' }`
+### `POST /api/settings/auto-defense`
+Enable or disable the autonomous IP blocking engine.
+- **Body**: `{ enabled: boolean }`
 
-### `POST /api/simulator/launch-attack`
-Trigger a synthetic attack pattern.
-- **Body**: `{ type: 'brute-force' | 'ddos' | 'port-scan' }`
-
-### `POST /api/forensic/upload`
-Bulk upload raw log traces.
-- **Headers**: `Content-Type: text/plain`
-- **Body**: Raw log text content.
+### `POST /api/block-ip`
+Manually blacklist an IP address across specific modes.
+- **Body**: `{ ip: string, mode: string }`
 
 ---
 
-## ☁️ AWS Integration
+## 📥 Exports & Reports
 
-### `GET /api/ec2/config`
-Fetch stored EC2 connection details.
+### `GET /api/export`
+Bulk export security data in CSV format.
+- **Query Params**: `type` (`logs` | `alerts` | `incidents`), `mode`
 
-### `POST /api/ec2/config`
-Update and attempt to establish an SSH connection.
-- **Body**: `{ host: string, username: string, keyPath: string, enabled: boolean }`
+### `GET /api/export/incident-report`
+Generate a comprehensive, regulator-ready incident report.
+- **Query Params**: `id` (Incident ID), `format` (`csv` | `json`)
 
 ---
 
-## 🔍 Investigation & Search
+## 🔍 Advanced Discovery
 
-### `POST /api/search`
-Perform a filtered search on logs.
-- **Body**: `{ query: string }`
-- **Query Params**: `mode`
-
-### `GET /api/anomalies`
-Fetch rolling behavioral anomaly scores and detected patterns.
+### `GET /api/search`
+Perform a high-performance attribute-based search.
+- **Example**: `/api/search?q=user=root AND risk=High`
+- **Supported Fields**: `user`, `ip`, `event`, `risk`

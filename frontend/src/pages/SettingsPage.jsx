@@ -12,6 +12,14 @@ export default function SettingsPage() {
   const [toast, setToast] = useState(null)
   const { on } = useSocket()
   const isAwsMode = opsMode === 'aws'
+  const isForensicMode = opsMode === 'forensic'
+  const [autoDefense, setAutoDefense] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/settings').then(r => r.json()).then(data => {
+      if (typeof data.autoDefense === 'boolean') setAutoDefense(data.autoDefense);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch('/api/ec2/config').then(r => r.json()).then(data => {
@@ -80,9 +88,9 @@ export default function SettingsPage() {
           <h3 className="text-xl font-bold font-sora text-[var(--text-primary)] mb-1">Environment Operating Mode</h3>
           <p className="text-xs text-[var(--text-secondary)]">Currently executing in isolated system conditions.</p>
         </div>
-        <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${isAwsMode ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
-          <span className={`w-2 h-2 rounded-full ${isAwsMode ? 'bg-red-500 animate-pulse' : 'bg-emerald-500 animate-pulse'}`} />
-          <span className="text-xs font-bold uppercase tracking-widest">{isAwsMode ? 'Live AWS Mode Active' : 'Simulation Mode Active'}</span>
+        <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${isAwsMode ? 'bg-red-500/10 border-red-500/30 text-red-400' : isForensicMode ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
+          <span className={`w-2 h-2 rounded-full ${isAwsMode ? 'bg-red-500 animate-pulse' : isForensicMode ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 animate-pulse'}`} />
+          <span className="text-xs font-bold uppercase tracking-widest">{isAwsMode ? 'Live AWS Mode Active' : isForensicMode ? 'Forensic Mode Active' : 'Simulation Mode Active'}</span>
         </div>
       </div>
 
@@ -164,6 +172,39 @@ export default function SettingsPage() {
             {clearing ? <Activity className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
             {clearConfirm ? 'CONFIRM PERMANENT WIPE' : 'Wipe Database'}
           </button>
+        </div>
+      </div>
+
+      {/* Auto Defense Toggle */}
+      <div className="glass-panel p-6 border-l-4 border-purple-500/40">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-[0.7rem] uppercase tracking-widest text-purple-400 font-bold flex items-center gap-2 mb-2">
+              <ShieldAlert className="w-4 h-4" /> Automated Response Engine
+            </h3>
+            <p className="text-[0.65rem] text-[var(--text-secondary)] leading-relaxed max-w-md">
+              When enabled, IPs triggering 5+ failed logins or port scans will be automatically blocked within the current mode's scope. Blocked IPs are mode-isolated.
+            </p>
+          </div>
+          <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-[var(--border-panel)] bg-[var(--bg-panel)] hover:bg-[var(--accent-glow)] transition-all">
+            <input type="checkbox" className="sr-only" checked={autoDefense} onChange={async (e) => {
+              const enabled = e.target.checked;
+              setAutoDefense(enabled);
+              try {
+                await fetch('/api/settings/auto-defense', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ enabled })
+                });
+                setToast({ type: 'success', message: `Auto Defense ${enabled ? 'Activated' : 'Deactivated'}` });
+                setTimeout(() => setToast(null), 3000);
+              } catch(err) {}
+            }} />
+            <div className={`w-9 h-5 rounded-full transition-colors relative ${autoDefense ? 'bg-purple-500' : 'bg-gray-600'}`}>
+              <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-transform ${autoDefense ? 'translate-x-5' : 'translate-x-1'}`} />
+            </div>
+            <span className="text-xs font-bold text-[var(--text-primary)]">{autoDefense ? 'Active' : 'Disabled'}</span>
+          </label>
         </div>
       </div>
     </div>
