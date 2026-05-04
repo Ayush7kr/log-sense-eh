@@ -34,10 +34,18 @@ setSimIO(io);
 ec2.setIO(io);
 
 io.on('connection', (socket) => {
-  socket.emit('stats:update', getDashboardData());
+  socket.emit('stats:update', {
+    SIMULATION: getDashboardData('SIMULATION'),
+    AWS: getDashboardData('AWS'),
+    FORENSIC: getDashboardData('FORENSIC')
+  });
   socket.emit('ec2:status', { connected: ec2.isConnected() });
 });
-setInterval(() => io.emit('stats:update', getDashboardData()), 5000);
+setInterval(() => io.emit('stats:update', {
+  SIMULATION: getDashboardData('SIMULATION'),
+  AWS: getDashboardData('AWS'),
+  FORENSIC: getDashboardData('FORENSIC')
+}), 5000);
 app.use(cors());
 app.use(express.json());
 app.use(express.text({ limit: '50mb', type: 'text/plain' }));
@@ -268,6 +276,19 @@ monitor.start();
 // ── Dashboard data helper ────────────────────────────────────────────────────
 function getDashboardData(sourceMode = 'SIMULATION') {
   try {
+    const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+    const twoHoursAgo = new Date(Date.now() - 7200000).toISOString();
+
+    const currentCount = db.prepare('SELECT COUNT(*) as c FROM logs WHERE source = ? AND timestamp >= ?').get(sourceMode, oneHourAgo).c;
+    const prevCount = db.prepare('SELECT COUNT(*) as c FROM logs WHERE source = ? AND timestamp >= ? AND timestamp < ?').get(sourceMode, twoHoursAgo, oneHourAgo).c;
+
+    let trendPct = 0;
+    if (prevCount > 0) {
+      trendPct = Math.round(((currentCount - prevCount) / prevCount) * 100);
+    } else if (currentCount > 0) {
+      trendPct = 100;
+    }
+
     const rows = db.prepare('SELECT timestamp, ip, event, risk FROM logs WHERE source = ? ORDER BY id DESC LIMIT 1000').all(sourceMode);
     const trafficBuckets = new Map();
     const eventBuckets = { login: 0, network: 0, privilege: 0, file: 0, other: 0 };
@@ -283,15 +304,17 @@ function getDashboardData(sourceMode = 'SIMULATION') {
       else if (r.event.includes('File')) eventBuckets.file++;
       else eventBuckets.other++;
     });
+
     return {
       totalLogs: db.prepare('SELECT COUNT(*) as c FROM logs WHERE source = ?').get(sourceMode).c,
       failedLogins: db.prepare("SELECT COUNT(*) as c FROM logs WHERE source = ? AND (event LIKE '%Fail%' OR event LIKE '%FAIL%')").get(sourceMode).c,
       highRiskEvents: db.prepare("SELECT COUNT(*) as c FROM logs WHERE source = ? AND risk = 'High'").get(sourceMode).c,
       activeIPs: db.prepare('SELECT COUNT(DISTINCT ip) as c FROM logs WHERE source = ?').get(sourceMode).c,
+      trendPct,
       trafficTimeline: Array.from(trafficBuckets.entries()).sort().map(([t, e]) => ({ time: t, events: e })),
       eventDistribution: Object.entries(eventBuckets).map(([n, v]) => ({ name: n, value: v })),
     };
-  } catch (err) { return {}; }
+  } catch (err) { return { trendPct: 0 }; }
 }
 
 // ── Advanced SOC Helpers ─────────────────────────────────────────────────────
@@ -350,8 +373,9 @@ let forensicMode = false;
 
 // Central mode resolver — single source of truth for all endpoints
 function resolveSource(queryMode) {
-  if (queryMode === 'aws') return 'AWS';
-  if (queryMode === 'forensic') return 'FORENSIC';
+  let mode = Array.isArray(queryMode) ? queryMode[queryMode.length - 1] : queryMode;
+  if (mode === 'aws') return 'AWS';
+  if (mode === 'forensic') return 'FORENSIC';
   return 'SIMULATION';
 }
 
@@ -515,19 +539,44 @@ app.get('/api/threat-score', (req, res) => {
       try { return db.prepare("SELECT COUNT(*) as c FROM blocked_ips WHERE source = ?").get(mode)?.c || 0; } catch(e) { return 0; }
     })();
 
-    let rawScore = 0;
-    for (const a of activeAlerts) {
-      if (a.severity === 'Critical') rawScore += 25;
-      else if (a.severity === 'High') rawScore += 15;
-      else if (a.severity === 'Medium') rawScore += 8;
-      else rawScore += 2;
-    }
-    for (const i of activeIncidents) {
-      rawScore += (i.severity_score || 0) * 2;
-    }
-    rawScore += blockedCount * 5;
+    // 1. Alert Component (Max 30) - Logarithmic scaling
+    let alertWeightedSum = 0;
+    activeAlerts.forEach(a => {
+      if (a.severity === 'Critical') alertWeightedSum += 12;
+      else if (a.severity === 'High') alertWeightedSum += 8;
+      else if (a.severity === 'Medium') alertWeightedSum += 4;
+      else alertWeightedSum += 1;
+    });
+    // Log scale: 30 * log10(1 + sum/20). At sum=180 (e.g. 15 criticals), it hits ~30.
+    const alertComp = Math.min(30, Number((30 * Math.log10(1 + alertWeightedSum / 20)).toFixed(2)));
 
-    const score = Math.min(100, Math.round(rawScore));
+    // 2. Incident Component (Max 40) - Linear weighted with cap
+    let incidentWeightedSum = 0;
+    activeIncidents.forEach(i => {
+      incidentWeightedSum += (i.severity_score || 0);
+    });
+    const incidentComp = Math.min(40, incidentWeightedSum * 1.5);
+
+    // 3. Posture Component (Max 15) - Based on unique blocked IPs
+    const postureComp = Math.min(15, blockedCount * 3);
+
+    // 4. Velocity/Heat Component (Max 15) - Log volume spikes
+    const tenMinsAgo = new Date(Date.now() - 600000).toISOString();
+    const recentLogVolume = db.prepare("SELECT COUNT(*) as c FROM logs WHERE source = ? AND timestamp >= ?").get(mode, tenMinsAgo).c;
+    const velocityComp = Math.min(15, (recentLogVolume / 50) * 3);
+
+    let finalScore = alertComp + incidentComp + postureComp + velocityComp;
+
+    // Temporal Decay: Reduce score if system is completely idle for >20 mins
+    const lastLog = db.prepare("SELECT timestamp FROM logs WHERE source = ? ORDER BY id DESC LIMIT 1").get(mode);
+    if (lastLog) {
+      const diffMin = (Date.now() - new Date(lastLog.timestamp).getTime()) / 60000;
+      if (diffMin > 20) {
+        finalScore *= Math.max(0.5, 1 - (diffMin - 20) / 100); // Gradual decay to 50%
+      }
+    }
+
+    const score = Math.min(100, Math.round(finalScore));
 
     let level = 'Low';
     if (score >= 75) level = 'Critical';
@@ -540,9 +589,15 @@ app.get('/api/threat-score', (req, res) => {
       activeAlerts: activeAlerts.length,
       activeIncidents: activeIncidents.length,
       blockedIPs: blockedCount,
+      breakdown: {
+        alerts: alertComp,
+        incidents: incidentComp,
+        posture: postureComp,
+        velocity: velocityComp
+      }
     });
   } catch(e) {
-    res.json({ score: 0, level: 'Low', activeAlerts: 0, activeIncidents: 0, blockedIPs: 0 });
+    res.json({ score: 0, level: 'Low', activeAlerts: 0, activeIncidents: 0, blockedIPs: 0, breakdown: { alerts: 0, incidents: 0, posture: 0, velocity: 0 } });
   }
 });
 

@@ -8,7 +8,10 @@ export function useApi(url, { pollMs } = {}) {
   const fetchOnce = async () => {
     try {
       const mode = localStorage.getItem('log-sense-mode') || 'sim';
-      const targetUrl = url.includes('?') ? `${url}&mode=${mode}` : `${url}?mode=${mode}`;
+      let targetUrl = url;
+      if (!targetUrl.includes('mode=')) {
+        targetUrl = targetUrl.includes('?') ? `${targetUrl}&mode=${mode}` : `${targetUrl}?mode=${mode}`;
+      }
       const res = await fetch(targetUrl)
       if (!res.ok) throw new Error(`Request failed with ${res.status}`)
       const json = await res.json()

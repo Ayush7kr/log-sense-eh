@@ -120,7 +120,7 @@ export default function OverviewPage() {
 
       {/* Threat Score Meter */}
       <div className="glass-panel p-6 flex flex-col sm:flex-row items-center gap-6">
-        <div className="relative w-36 h-36 shrink-0">
+        <div className="relative w-36 h-36 shrink-0 group cursor-help">
           <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
             <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border-panel)" strokeWidth="8" />
             <circle
@@ -138,6 +138,35 @@ export default function OverviewPage() {
             <span className={`text-[0.6rem] font-bold uppercase tracking-wider ${
               threatData?.level === 'Critical' ? 'text-red-400' : threatData?.level === 'High' ? 'text-orange-400' : threatData?.level === 'Medium' ? 'text-amber-400' : 'text-emerald-400'
             }`}>{threatData?.level || 'Low'}</span>
+          </div>
+
+          {/* Breakdown Tooltip */}
+          <div className="absolute top-full md:top-1/2 left-1/2 md:left-full -translate-x-1/2 md:-translate-x-0 md:-translate-y-1/2 mt-2 md:mt-0 md:ml-4 w-60 p-3.5 rounded-xl bg-black/90 border border-[var(--border-panel)] shadow-2xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
+            <h4 className="text-xs font-bold text-white border-b border-gray-800 pb-2 mb-2 flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-blue-400" />
+              Score Calculation
+            </h4>
+            <div className="space-y-2 text-[0.65rem] text-gray-300">
+              <div className="flex justify-between items-center">
+                <span>Alerts Weight (Max 30):</span>
+                <span className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">+{threatData?.breakdown?.alerts || 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Incidents Weight (Max 40):</span>
+                <span className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">+{threatData?.breakdown?.incidents || 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Posture/Blocked (Max 15):</span>
+                <span className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">+{threatData?.breakdown?.posture || 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Traffic Velocity (Max 15):</span>
+                <span className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">+{threatData?.breakdown?.velocity || 0}</span>
+              </div>
+            </div>
+            <div className="mt-3 pt-2 border-t border-gray-800 text-[0.55rem] text-gray-400 italic">
+              Note: Score dynamically decays during idle periods to prevent stale threat states.
+            </div>
           </div>
         </div>
         <div className="flex-1 space-y-3">

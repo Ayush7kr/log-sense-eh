@@ -66,7 +66,12 @@ export function LogsProvider({ children, opsMode }) {
     )
 
     // Dashboard stats
-    cleanups.push(on('stats:update', (data) => setDashboardData(data)))
+    cleanups.push(on('stats:update', (data) => {
+      let expectedSource = 'SIMULATION';
+      if (opsMode === 'aws') expectedSource = 'AWS';
+      if (opsMode === 'forensic') expectedSource = 'FORENSIC';
+      setDashboardData(data[expectedSource] || data);
+    }))
 
     // EC2 status
     cleanups.push(on('ec2:status', (status) => setEc2Status(status)))
@@ -132,7 +137,7 @@ export function LogsProvider({ children, opsMode }) {
     }))
 
     return () => cleanups.forEach((fn) => fn())
-  }, [socket, on, paused])
+  }, [socket, on, paused, opsMode])
 
   // When unpaused, flush buffer
   useEffect(() => {

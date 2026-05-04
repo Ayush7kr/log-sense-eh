@@ -9,6 +9,7 @@ export default function AlertsPage() {
   const [dbSuspicious, setDbSuspicious] = useState([])
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState('alerts')
+  const [investigationPopup, setInvestigationPopup] = useState({ isOpen: false, alert: null })
 
   useEffect(() => {
     fetch(`/api/alerts?mode=${opsMode || 'sim'}`)
@@ -61,6 +62,59 @@ export default function AlertsPage() {
       })
     } catch(e) {}
   }
+
+  const handleInvestigateClick = (alert) => {
+    handleAction(alert.id, 'investigate');
+    setInvestigationPopup({ isOpen: true, alert });
+  };
+
+  const getInvestigationSteps = (type) => {
+    switch (type) {
+      case 'Suspicious Login Activity':
+        return [
+          'Verify if the target IP is associated with a known VPN or anonymizer.',
+          'Check user history for typical login locations.',
+          'Reset user credentials if logins were successful.',
+          'Implement rate limiting on the authentication endpoint.',
+          'Search logs for other users targeted by this IP.'
+        ];
+      case 'Blocked IP Activity':
+        return [
+          'Confirm that the firewall correctly dropped the payload.',
+          'Review the payload signature to understand the attack type.',
+          'Check if other internal systems were targeted by this IP before the block.',
+          'Add the IP to global blocklists if part of a broader campaign.'
+        ];
+      case 'Port Scan':
+        return [
+          'Identify which ports were targeted to understand the attacker\'s objective.',
+          'Ensure no critical services are exposed on the targeted ports.',
+          'Correlate the source IP with known scanning entities (e.g., Shodan, Censys).',
+          'Temporarily block the source IP if the scan is aggressive.'
+        ];
+      case 'Privilege Escalation':
+        return [
+          'IMMEDIATELY isolate the affected instance or user session.',
+          'Identify the exploit path or misconfiguration used.',
+          'Review all actions taken by the user post-escalation.',
+          'Initiate incident response protocols for potential data breach.'
+        ];
+      case 'New Login Location':
+        return [
+          'Contact the user via a secondary channel to confirm the login.',
+          'Review the device fingerprint if available.',
+          'Require multi-factor authentication (MFA) for the session.',
+          'Monitor the session for unusual data access patterns.'
+        ];
+      default:
+        return [
+          'Review the attached log traces for anomalous patterns.',
+          'Correlate the event time with known system changes or deployments.',
+          'Monitor the source IP for continued suspicious activity.',
+          'Escalate to a senior analyst if the activity persists.'
+        ];
+    }
+  };
 
   const getSeverityStyles = (sev) => {
     if (sev === 'Critical') return 'border-red-500/50 bg-red-500/10 text-red-400'
@@ -219,9 +273,8 @@ export default function AlertsPage() {
                       </span>
                       <div className="flex gap-2">
                         <button 
-                          onClick={() => handleAction(alert.id, 'investigate')}
-                          disabled={isInvestigating}
-                          className="px-3 py-1.5 rounded-lg text-[0.65rem] bg-[var(--bg-main)] border border-[var(--border-panel)] hover:border-[var(--text-primary)] transition-all disabled:opacity-50"
+                          onClick={() => handleInvestigateClick(alert)}
+                          className="px-3 py-1.5 rounded-lg text-[0.65rem] bg-[var(--bg-main)] border border-[var(--border-panel)] hover:border-[var(--text-primary)] transition-all"
                         >
                           Investigate &rarr;
                         </button>
@@ -240,6 +293,76 @@ export default function AlertsPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Investigation Popup Modal */}
+      <AnimatePresence>
+        {investigationPopup.isOpen && investigationPopup.alert && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="glass-panel w-full max-w-lg overflow-hidden border border-[var(--border-panel)] shadow-2xl bg-[var(--bg-main)]"
+            >
+              <div className="p-5 border-b border-[var(--border-panel)] flex items-start justify-between bg-blue-500/5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+                    <ShieldAlert className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-[var(--text-primary)]">Investigation Playbook</h3>
+                    <p className="text-xs text-[var(--text-secondary)]">{investigationPopup.alert.type}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setInvestigationPopup({ isOpen: false, alert: null })}
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-xl font-medium leading-none"
+                >
+                  &times;
+                </button>
+              </div>
+              
+              <div className="p-5 space-y-4">
+                <div className="text-sm text-[var(--text-secondary)] mb-2">
+                  Recommended response actions for <span className="font-medium text-[var(--text-primary)]">{investigationPopup.alert.ip}</span>:
+                </div>
+                
+                <ul className="space-y-3">
+                  {getInvestigationSteps(investigationPopup.alert.type).map((step, idx) => (
+                    <motion.li 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      key={idx} 
+                      className="flex items-start gap-3 text-sm bg-[var(--bg-main)] p-3 rounded-lg border border-[var(--border-panel)]"
+                    >
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-bold mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <span className="text-[var(--text-primary)]">{step}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="p-4 border-t border-[var(--border-panel)] flex justify-end gap-3">
+                <button 
+                  onClick={() => setInvestigationPopup({ isOpen: false, alert: null })}
+                  className="px-4 py-2 rounded-lg text-sm bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors"
+                >
+                  Acknowledge & Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
+
